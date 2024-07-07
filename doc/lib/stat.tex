@@ -1,0 +1,46 @@
+%%
+%%  INCLUDE: stat.tex
+%%  
+%%  symbols and notation for probability theory and statistics
+%%
+
+
+%% \p{X=k};  \pC{X=k}{Y=l};  \pscale{\frac{Z}{S^2}}
+%% probability P(X=k), conditional probability P(X=k|Y=l), and variants with scaled parentheses
+\newcommand{\p}[1]{\mathop{\mathrm{Pr}}\bigl(#1\bigr)}
+\newcommand{\pscale}[1]{\mathop{\mathrm{Pr}}\left(#1\right)}
+\newcommand{\pC}[2]{\p{#1\bigm|#2}} 
+\newcommand{\pCscale}[2]{\pscale{#1\,\left|\,#2\right.}} 
+
+%% \Exp{X};  \Var{X};  \Exp[0]{X};  \Var[0]{X};  \Expscale{X};  \Varscale{X}
+%% expectation E[X] and variance V[X], expectation and variance under null hypothesis, 
+%% and variants with scaled brackets
+\newcommand{\Exp}[2][]{E_{#1}\bigl[#2\bigr]}
+\newcommand{\Var}[2][]{\mathop{\mathrm{Var}}_{#1}\bigl[#2\bigr]}
+\newcommand{\Expscale}[2][]{E_{#1}\left[#2\right]}
+\newcommand{\Varscale}[2][]{\mathop{\mathrm{Var}}_{#1}\left[#2\right]}
+
+%% \I{f_i = M};  \bigI{\sum_{i=1}^S f_i = N}
+%% indicator variable (as in Baayen 2001), and variant with explicitly scaled brackets
+\newcommand{\I}[1]{I_{\left[#1\right]}}
+\newcommand{\bigI}[1]{I_{\bigl[#1\bigr]}}
+
+%% \Hind;  \Hhom;  \Hnull{\kappa = x}
+%% null hypothesis of independence and homogeneity; general null hypothesis identified by condition
+\newcommand{\Hind}{H_0}
+\newcommand{\Hhom}{H_{0,\, hom}}
+\newcommand{\Hnull}[1]{H_{#1}}
+
+%% \confint{\kappa};  \confint[0.99]{\kappa}
+%% confidence interval for specified population characteristic (conf. level defaults to \alpha)
+\newcommand{\confint}[2][\alpha]{I_{#2,\,#1}}
+
+%% \df = 1
+%% degrees of freedom
+\newcommand{\df}{\mathit{df}}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

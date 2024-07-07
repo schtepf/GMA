@@ -1,0 +1,31 @@
+%%
+%% some macros for typesetting text
+%%
+
+%% \OPEN ... \CLOSE; \OPEN[np] ... \CLOSE[np]
+%% bold large brackets for labelled bracketing notation
+\newcommand{\OPEN}[1][]{\only{$\boldsymbol{\bigl[}\text{}_{\text{\raisebox{-2pt}{\textsc{#1}}}}$}}
+\newcommand{\CLOSE}[1][]{\only{$\text{}_{\text{\raisebox{-2pt}{\textsc{#1}}}}\boldsymbol{\bigr]}$}}
+
+%% \textgap ("_" representing missing letter)
+\newcommand{\textgap}{\mbox{\hspace{.4pt}\texttt{\bfseries\secondary{\textunderscore}}\hspace{.4pt}}}
+
+%% -- commands are defined in the hyperref bundle
+%% \textstar, \textast (math \star and \ast symbols in text mode, with some extra spacing)
+% \newcommand{\textstar}{$\mspace{.8mu}\star\mspace{.8mu}$}
+% \newcommand{\textast}{$\ast$}
+
+%% $\p{\ctext{abc}}$ (cited text in mathematical equations, e.g. n-gram probabilities)
+\newcommand{\ctext}[1]{\text{\textcite{#1}}}
+
+%% $\p{\btext{abc}}$ (normal black text even in coloured math environment)
+\newcommand{\btext}[1]{\text{\foreground{#1}}} 
+
+%% text subscripts and superscripts (can be used in math and text mode)
+\newcommand{\tsup}[1]{\ensuremath{^{\text{#1}}}}
+\newcommand{\tsub}[1]{\ensuremath{_{\text{#1}}}}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: ""
+%%% End: 

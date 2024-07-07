@@ -1,0 +1,48 @@
+%%
+%% convenience macros for linear algebra (vectors and matrices)
+%%
+
+%% \Vector[i]{x} ... vector variable with optional _superscript_ index in parentheses
+%% \Vector[']{x} ... special case: ' superscript not enclosed in parentheses
+%% \vx, \vy, \vz ... abbreviations for common vector names
+\newcommand{\Vector}[2][]{\mathbf{#2}\ifthenelse{\equal{#1}{}}{}{^{(#1)}}}
+\newcommand{\vx}[1][]{\Vector[#1]{x}}
+\newcommand{\vy}[1][]{\Vector[#1]{y}}
+\newcommand{\vz}[1][]{\Vector[#1]{z}}
+\newcommand{\vu}[1][]{\Vector[#1]{u}}
+\newcommand{\vv}[1][]{\Vector[#1]{v}}
+\newcommand{\vw}[1][]{\Vector[#1]{w}}
+\newcommand{\vm}[1][]{\Vector[#1]{m}} 
+\newcommand{\va}[1][]{\Vector[#1]{a}} % vectors of coefficients
+\newcommand{\vb}[1][]{\Vector[#1]{b}} % for basis
+\newcommand{\vc}[1][]{\Vector[#1]{c}}
+\newcommand{\vd}[1][]{\Vector[#1]{d}}
+\newcommand{\ve}[1][]{\Vector[#1]{e}} % for standard basis of R^n
+\newcommand{\vn}[1][]{\Vector[#1]{n}} % normal vector
+\newcommand{\vnull}[1][]{\Vector[#1]{0}} % neutral element
+\newcommand{\vone}[1][]{\Vector[#1]{1}} % vector of ones
+
+%% \Span{\vb[1],\ldots,\vb[k]} ... span of set of vectors
+%% \Rank{...} ... rank of set of vectors or matrix
+%% \Det{...}, \det A ... determinant of a set of vectors / a matrix A
+%% \Image{f}, \Kernel{f} ... image and kernel of a linear map
+\newcommand{\Span}[1]{\mathop{\text{sp}}\left(#1\right)}
+\newcommand{\Rank}[1]{\mathop{\text{rank}}\left(#1\right)}
+\newcommand{\Det}[1]{\mathop{\text{Det}}\left(#1\right)}
+%% \det is already defined in the standard library
+\newcommand{\Image}[1]{\mathop{\text{Im}}\left(#1\right)}
+\newcommand{\Kernel}[1]{\mathop{\text{Ker}}\left(#1\right)}
+
+%% \dist[2]{\vx}{\vy} ... distance between two vectors (p-metric)
+\newcommand{\dist}[3][]{d_{#1}\left(#2, #3\right)}
+\newcommand{\bigdist}[3][]{d_{#1}\bigl(#2, #3\bigr)}
+
+%% \sprod{\vu}{\vv} ... scalar product
+\newcommand{\sprod}[2]{\left\langle #1, #2 \right\rangle}
+\newcommand{\bigsprod}[2]{\bigl\langle #1, #2 \bigr\rangle}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: ""
+%%% End: 

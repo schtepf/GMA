@@ -1,0 +1,157 @@
+\documentclass[a4paper]{article}
+
+\usepackage{vmargin}
+\setpapersize[portrait]{A4}
+\setmarginsrb{30mm}{10mm}{30mm}{20mm}% left, top, right, bottom
+{12pt}{15mm}% head heigth / separation
+{0pt}{15mm}% bottom height / separation
+%% \setmargnohfrb{30mm}{20mm}{20mm}{20mm}
+
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{\medskipamount}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+\usepackage[T1]{fontenc}
+%% \usepackage{textcomp}  % this can break some outline symbols in CM fonts, use only if absolutely necessary
+
+\usepackage{lmodern}   % type1 computer modern fonts in T1 encoding
+%% \usepackage{mathptmx}  % use Adobe Times as standard font with simulated math support
+%% \usepackage{mathpazo}  % use Adobe Palatino as standard font with simulated math support
+
+%% \usepackage{pifont}
+%% \usepackage{eucal}
+\usepackage{mathrsfs} % \mathscr
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx,rotating}
+\usepackage{array,hhline,booktabs}
+\usepackage{xspace}
+\usepackage{url,hyperref}
+%% \usepackage{ifthen,calc,hyphenat}
+\usepackage{enumitem}
+\setlist{noitemsep}
+
+\usepackage{xcolor,tikz}
+\usepackage[textwidth=25mm,textsize=small,colorinlistoftodos,backgroundcolor=orange!80]{todonotes} % [disable] to hide all TODOs
+
+\usepackage{natbib}
+\bibpunct[:~]{(}{)}{;}{a}{}{,}
+
+\input{lib/math.tex}
+\input{lib/text.tex}
+\input{lib/stat.tex}
+\input{lib/vector.tex}
+
+\title{The mathematics of Geometric Multivariate Analysis}
+\author{Stephanie Evert}
+\date{7 July 2024}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Algorithms}
+\label{sec:algorithms}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Linear discriminant analysis}
+\label{sec:algorithms:lda}
+
+\subsubsection{The LDA algorithm}
+\label{sec:algorithms:lda:standard}
+
+\begin{itemize}
+\item originally proposed by \citet{Fisher:36} for a one-dimensional discriminant between two groups
+  \begin{itemize}
+  \item uses $D^2 / S$ as separation criterion where $D$ is the difference between the group means and $S$ the within group variance (computed from within-group covariance matrix $\mathbf{S}$)
+  \item directly solves for minimum, resulting in equation system $\mathbf{S} \boldsymbol{\lambda} = \vd$
+  \item Fisher does not discuss an extension to multiple groups (using between-group variance as criterion) nor to a multi-dimensional discriminant
+  \end{itemize}
+\item data matrix $\mathbf{X}\in \setR^{n\times d}$ with $n$ data points $\vx_i\in \setR^d$
+\item LDA algorithm as implemented in the \texttt{MASS} package is described by \citet[331--332]{Venables:Ripley:02}:
+  \begin{itemize}
+  \item matrix of group means $\mathbf{M}\in \setR^{g\times d}$ as row vectors $\vm_j$
+  \item group indicator matrix $\mathbf{G}\in \setR^{n\times g}$ with $g_{ij} = 1$ iff $X_i$ belongs to group $j$
+  \item $\overline{\vx}\in setR^d$ the overall mean $\overline{\vx} = \frac1n \sum_i \vx_i$
+  \item the ``group predictions'' are given by $\mathbf{G}\mathbf{M}$
+  \item within-group covariance matrix $\mathbf{W}$ and between-group covariance matrix $\mathbf{B}$ are
+    \begin{equation}
+      \label{eq:lda:mass-W-B}
+      \mathbf{W} = \frac{
+        (\mathbf{X} - \mathbf{GM})^T (\mathbf{X} - \mathbf{GM})
+      }{ n - g }
+      ,\qquad
+      \mathbf{B} = \frac{
+        (\mathbf{GM} - \vone \overline{\vx}^T)^T (\mathbf{GM} - \vone \overline{\vx}^T)
+      }{g - 1}
+    \end{equation}
+  \item a one-dimensional discriminant is given by a linear combination $\va^T \vx$ that maximises the ratio of between-group to within-group variance along the discriminant axis:
+    \begin{equation}
+      \label{eq:lda:mass-criterion}
+      \frac{\va^T \mathbf{B} \va}{\va^T \mathbf{W} \va}
+    \end{equation}
+  \item NB: this criterion is proportional to the F-statistic of ANOVA; since it differs only by a fixed factor, the choice of $\va$ also maximises the F-statistic%
+    \footnote{See Wikipedia article on \href{https://en.wikipedia.org/wiki/Analysis_of_variance\#The_F-test}{Analysis of variance} for the usual form of the F-statistic. See Wikipedia articles on the \href{https://en.wikipedia.org/wiki/F-test\#Formula_and_calculation}{F-test} and the \href{https://en.wikipedia.org/wiki/F-distribution\#Definition}{F-distribution} for an explanation of the scaling factors involved.}
+  \item to find the maximum, compute a sphering $\vy = \mathbf{S} \vx$ of the variables so that the within-group covariance matrix becomes $\mathbf{W}' = \mathbf{I}$
+  \item the problem is then to maximise $\va^T \mathbf{B}' \va$ for the transformed between-group matrix $\mathbf{B}$ subject to $\norm{\va} = 1$ (because the transformation $\va' = \mathbf{S}^{-1} \va$ yields the same value for (\ref{eq:lda:mass-criterion}))
+  \item $\va$ is then easily found as the largest principal component of $\mathbf{B}'$
+  \item for an extension to a multi-dimensional discriminant, the first $r$ principal components can be used, and the number of dimensions can be chosen according to their principal values or $R^2$; while this is plausible in the sphered coordinates, Venables \& Ripley don't explain what separation criterion it optimises in the original coordinate system
+  \end{itemize}
+\item a different explanation of the LDA algorithm is given by \citet[186--190]{Bishop:06}, who explicitly discusses the extension to multiple classes and a multi-dimensional discriminant \citep[191--192]{Bishop:06}
+\item Bishop also points out the problem that it is no longer clear which separation criterion should be maximised and refers to \citet[445--459]{Fukunaga:90} for a detailed exposition of different criteria and their optimisation
+\end{itemize}
+
+\paragraph{Useful Wikipedia articles}
+
+\begin{itemize}
+\item Analysis of variance: \url{https://en.wikipedia.org/wiki/Analysis_of_variance}
+\item F-test: \url{https://en.wikipedia.org/wiki/F-test#Formula_and_calculation}
+\item F-distribution: \url{https://en.wikipedia.org/wiki/F-distribution#Definition}
+\item MANOVA separation criteria: \url{https://en.wikipedia.org/wiki/Multivariate_analysis_of_variance#Hypothesis_Testing}
+\item Linear discriminant analysis: \url{https://en.wikipedia.org/wiki/Linear_discriminant_analysis}, esp.\ \url{https://en.wikipedia.org/wiki/Linear_discriminant_analysis#Multiclass_LDA}
+\item Blessing of dimensionality: \url{https://en.wikipedia.org/wiki/Curse_of_dimensionality#Blessing_of_dimensionality} (but more relevant for Azuma paper)
+\end{itemize}
+
+\subsubsection{Repeated-measures LDA}
+\label{sec:algorithms:lda:repeated}
+
+\begin{itemize}
+\item \textbf{repeated-measures} as appropriate terminology: \url{https://en.wikipedia.org/wiki/Repeated_measures_design}
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{}
+\label{sec:A}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{}
+\label{sec:A:}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{}
+\label{sec:B}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{}
+\label{sec:B:}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% \renewcommand{\bibsection}{}    % avoid (or change) section heading 
+\bibliographystyle{apalike}
+\bibliography{stefan-literature,stefan-publications}  
+
+\newpage
+\listoftodos
+
+\end{document}

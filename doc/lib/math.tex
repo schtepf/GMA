@@ -1,0 +1,83 @@
+%%
+%%  INCLUDE: math.tex
+%%  
+%%  basic mathematical symbols and constructs (not specific to cooccurrences)
+%%
+
+
+%% \setN, \setN[0], \setZ, \setQ, \setR, \setC
+%% abbreviations for common number spaces
+\newcommand{\setN}[1][]{\mathbb{N}_{#1}} % allows \setN and \setN[0]
+\newcommand{\setZ}{\mathbb{Z}}
+\newcommand{\setQ}{\mathbb{Q}}
+\newcommand{\setR}{\mathbb{R}}
+\newcommand{\setC}{\mathbb{C}}
+
+%% \set{el_1, el_2, ...};  \setdef{el}{condition};  \bigset{..}, \bigsetdef{..}{..}
+%% extensional and intensional definition of sets, with "big" versions (like \bigl etc.)
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\setdef}[2]{\set{#1\,\left|\,#2\right.}}
+\newcommand{\bigset}[1]{\bigl\{#1\bigr\}}
+\newcommand{\bigsetdef}[2]{\bigset{#1\bigm|#2}}
+\newcommand{\Bigset}[1]{\Bigl\{#1\Bigr\}}
+\newcommand{\Bigsetdef}[2]{\Bigset{#1\Bigm|#2}}
+\newcommand{\biggset}[1]{\biggl\{#1\biggr\}}
+\newcommand{\biggsetdef}[2]{\biggset{#1\biggm|#2}}
+
+%% \compl{X} = complement of set X
+\newcommand{\compl}[1]{\mathcal{C} #1}
+
+%% \eps == \epsilon, \si == \sigma, \sisi == \sigma^2, \ka == \kappa
+\newcommand{\eps}{\epsilon}
+\newcommand{\si}{\sigma}
+\newcommand{\sisi}{\sigma^2}
+\newcommand{\ka}{\kappa}
+
+%% \abs{expr}, \bigabs{expr}, \norm{expr}, \bignorm{expr}
+%% absolute value and norm of expression, with "big" versions
+\newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+\newcommand{\bigabs}[1]{\bigl\lvert#1\bigr\rvert}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\bignorm}[1]{\bigl\lVert#1\bigr\rVert}
+
+%% \constpi == constant PI (in bold font)
+\newcommand{\constpi}{\boldsymbol{\pi}}
+
+%% \dx == "dx";  \dx[z] == "dz";  \dpi == \dx[\pi];  
+%% \dG == \dx[G], \dt == \dx[t]
+\newcommand{\dx}[1][x]{\,d#1}
+\newcommand{\dpi}{\dx[\pi]}
+\newcommand{\dG}{\dx[G]}
+\newcommand{\dt}{\dx[t]}
+
+%% \Int{\frac{1}{2} x^2}_a^b
+%% anti-derivative evaluated to compute definite integral
+\newcommand{\Int}[1]{\left[#1\right]}
+
+%% \limdownto{x}{0}
+%% limit from above for x -> 0
+\newcommand{\limdownto}[2]{\lim_{#1\,\downarrow\,#2}}
+
+%% \iffdef == ":<=>";  \iffdefR == "<=>:"
+\newcommand{\iffdef}{\;:\!\iff}
+\newcommand{\iffdefR}{\iff\!:\;}
+
+%% \logten(x) 
+%% base 10 logarithm, which is always used in the UCS system
+\newcommand{\logten}{\log_{10}}
+
+%% \e+3, \e-6, \e-{12}, 5.5\x\e-3
+%% engineering-style notation (orders of magnitude) for floating-point numbers
+\newcommand{\e}[2]{10^{\ifthenelse{\equal{#1}{+}}{}{#1}#2}}
+\newcommand{\x}{\cdot}
+
+%% \Landau{ n^2 }, \bigLandau{ N^2 }
+%% Landau symbol ("big oh notation")
+\newcommand{\Landau}[1]{\mathcal{O}\left({#1}\right)}
+\newcommand{\bigLandau}[1]{\mathcal{O}\bigl({#1}\bigr)}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
