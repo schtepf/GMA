@@ -21,15 +21,24 @@
 \newcommand{\vn}[1][]{\Vector[#1]{n}} % normal vector
 \newcommand{\vnull}[1][]{\Vector[#1]{0}} % neutral element
 \newcommand{\vone}[1][]{\Vector[#1]{1}} % vector of ones
+\newcommand{\vmu}[1][]{\Vector[#1]{\boldsymbol{\mu}}}
+
+%% \matSigma ... covariance matrix \Sigma (which may need special bold formatting)
+\newcommand{\matSigma}{\boldsymbol{\Sigma}}
+
+%% \T ... transpose of a matrix
+\newcommand{\T}{^{\text{T}}}
 
 %% \Span{\vb[1],\ldots,\vb[k]} ... span of set of vectors
 %% \Rank{...} ... rank of set of vectors or matrix
 %% \Det{...}, \det A ... determinant of a set of vectors / a matrix A
+%% \Trace{...} ... trace of a matrix A
 %% \Image{f}, \Kernel{f} ... image and kernel of a linear map
 \newcommand{\Span}[1]{\mathop{\text{sp}}\left(#1\right)}
 \newcommand{\Rank}[1]{\mathop{\text{rank}}\left(#1\right)}
 \newcommand{\Det}[1]{\mathop{\text{Det}}\left(#1\right)}
 %% \det is already defined in the standard library
+\newcommand{\Trace}[1]{\mathop{\text{tr}}\left(#1\right)}
 \newcommand{\Image}[1]{\mathop{\text{Im}}\left(#1\right)}
 \newcommand{\Kernel}[1]{\mathop{\text{Ker}}\left(#1\right)}
 

@@ -55,15 +55,12 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Algorithms}
-\label{sec:algorithms}
+\section{Linear discriminant analysis}
+\label{sec:lda}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Linear discriminant analysis}
-\label{sec:algorithms:lda}
-
-\subsubsection{The LDA algorithm}
-\label{sec:algorithms:lda:standard}
+\subsection{Background material}
+\label{sec:lda:background}
 
 \begin{itemize}
 \item originally proposed by \citet{Fisher:36} for a one-dimensional discriminant between two groups
@@ -83,22 +80,22 @@
     \begin{equation}
       \label{eq:lda:mass-W-B}
       \mathbf{W} = \frac{
-        (\mathbf{X} - \mathbf{GM})^T (\mathbf{X} - \mathbf{GM})
+        (\mathbf{X} - \mathbf{GM})\T (\mathbf{X} - \mathbf{GM})
       }{ n - g }
       ,\qquad
       \mathbf{B} = \frac{
-        (\mathbf{GM} - \vone \overline{\vx}^T)^T (\mathbf{GM} - \vone \overline{\vx}^T)
+        (\mathbf{GM} - \vone \overline{\vx}\T)\T (\mathbf{GM} - \vone \overline{\vx}\T)
       }{g - 1}
     \end{equation}
-  \item a one-dimensional discriminant is given by a linear combination $\va^T \vx$ that maximises the ratio of between-group to within-group variance along the discriminant axis:
+  \item a one-dimensional discriminant is given by a linear combination $\va\T \vx$ that maximises the ratio of between-group to within-group variance along the discriminant axis:
     \begin{equation}
       \label{eq:lda:mass-criterion}
-      \frac{\va^T \mathbf{B} \va}{\va^T \mathbf{W} \va}
+      \frac{\va\T \mathbf{B} \va}{\va\T \mathbf{W} \va}
     \end{equation}
   \item NB: this criterion is proportional to the F-statistic of ANOVA; since it differs only by a fixed factor, the choice of $\va$ also maximises the F-statistic%
     \footnote{See Wikipedia article on \href{https://en.wikipedia.org/wiki/Analysis_of_variance\#The_F-test}{Analysis of variance} for the usual form of the F-statistic. See Wikipedia articles on the \href{https://en.wikipedia.org/wiki/F-test\#Formula_and_calculation}{F-test} and the \href{https://en.wikipedia.org/wiki/F-distribution\#Definition}{F-distribution} for an explanation of the scaling factors involved.}
   \item to find the maximum, compute a sphering $\vy = \mathbf{S} \vx$ of the variables so that the within-group covariance matrix becomes $\mathbf{W}' = \mathbf{I}$
-  \item the problem is then to maximise $\va^T \mathbf{B}' \va$ for the transformed between-group matrix $\mathbf{B}$ subject to $\norm{\va} = 1$ (because the transformation $\va' = \mathbf{S}^{-1} \va$ yields the same value for (\ref{eq:lda:mass-criterion}))
+  \item the problem is then to maximise $\va\T \mathbf{B}' \va$ for the transformed between-group matrix $\mathbf{B}$ subject to $\norm{\va} = 1$ (because the transformation $\va' = \mathbf{S}^{-1} \va$ yields the same value for (\ref{eq:lda:mass-criterion}))
   \item $\va$ is then easily found as the largest principal component of $\mathbf{B}'$
   \item for an extension to a multi-dimensional discriminant, the first $r$ principal components can be used, and the number of dimensions can be chosen according to their principal values or $R^2$; while this is plausible in the sphered coordinates, Venables \& Ripley don't explain what separation criterion it optimises in the original coordinate system
   \end{itemize}
@@ -117,8 +114,175 @@
 \item Blessing of dimensionality: \url{https://en.wikipedia.org/wiki/Curse_of_dimensionality#Blessing_of_dimensionality} (but more relevant for Azuma paper)
 \end{itemize}
 
-\subsubsection{Repeated-measures LDA}
-\label{sec:algorithms:lda:repeated}
+\paragraph{Other material}
+
+\begin{itemize}
+\item Implementation of \texttt{lda()} in \url{https://github.com/cran/MASS/blob/master/R/lda.R}%
+  \footnote{local copy in \url{file:///Users/ex47emin/Software/R/MASS-GIT/R/lda.R}}
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Analysis of variance}
+\label{sec:lda:anova}
+
+Unsurprisingly, LDA \citep{Fisher:36} is closely connected to the analysis of variance or \textbf{ANOVA} \citep{Fisher:25}. We start by summarising the ANOVA method following the exposition in \citet[754--761]{DeGroot:Schervish:12}, but with modified notation.
+
+\begin{itemize}
+\item data: $n$ observations $y_i\in \setR$ belonging to $g$ groups; $g_i\in \set{1,\ldots,g}$ indicates group membership of $y_i$; group sizes are given by $n_j = \abs{\set{g_i = j}} = \sum_{g_i = j} 1$
+\item assumptions: items of group $j$ are i.i.d.\ samples from normal distribution $N(\mu_j, \sigma^2)$; variance $\sigma^2$ is equal for all groups, but the group means $\mu_j$ may be different
+\item ANOVA null hypothesis to be tested is $H_0: \mu_1 = \ldots = \mu_g$ (equal group means)
+\item observed overall mean $m$ and group means $m_j$ are given by
+  \begin{equation}
+    \label{eq:lda:anova:means}
+    m = \frac1n \sum_{i=1}^n y_i \qquad
+    m_j = \frac1{n_j} \sum_{g_i = j} y_i
+  \end{equation}
+\item basic idea: \textbf{sum of squares} as measure of variability of the data set can be partitioned into within-group and between-group components: $S^2 = S^2_W + S^2_B$ \citep[758]{DeGroot:Schervish:12}
+  \begin{align*}
+    S^2 &= \sum_{i=1}^n (y_i - m)^2 \\
+    S^2_W &= \sum_{j=1}^g \sum_{g_i = j} (y_i - m_j)^2 = \sum_{i=1}^n (y_i - m_{g_i})^2 \\
+    S^2_B &= \sum_{j=1}^g n_j (m_j - m)^2 = \sum_{i=1}^n (m_{g_i} - m)^2
+  \end{align*}
+\item $S^2_W / \sigma^2$ has a $\chi^2_{n-g}$ distribution \citep[757]{DeGroot:Schervish:12}; it follows that the \textbf{within-group variance} $W$ is an unbiased estimator of $\sigma^2$
+  \begin{equation}
+    \label{eq:lda:anova:W}
+    W = \frac{ \sum_{i=1}^n (y_i - m_{g_i})^2 }{ n - g }
+  \end{equation}
+\item under $H_0$ it can be shown that $S^2_B / \sigma^2$ has a $\chi^2_{g-1}$ distribution \citep[759]{DeGroot:Schervish:12}%
+  \footnote{note that under $H_0$ we have $m_j \sim N(\mu, \sigma^2 / n_j)$} %
+  and the \textbf{between-group variance} $B$ is also an unbiased estimator of $\sigma^2$
+  \begin{equation}
+    \label{eq:lda:anova:B}
+    B = \frac{ \sum_{j=1}^g n_j (m_j - m)^2 }{ g - 1 }
+  \end{equation}
+\item if $H_0$ does not hold, we expect $B$ to be larger than $\sigma^2$ (because of the added variability between the group means $\mu_j$) so that the ratio
+  \begin{equation}
+    \label{eq:lda:anova:U}
+    F = \frac{B}{W} = \frac{S^2_B / (g - 1)}{S^2_W / (n - g)}
+  \end{equation}
+  is a suitable test statistic for ANOVA; p-values can be obtained from its $F_{g-1, n-g}$ distribution under $H_0$ \citep[759]{DeGroot:Schervish:12}
+\end{itemize}
+
+Analysis of variance can be generalised to a comparison of group means for multivariate data (\textbf{MANOVA}). Many concepts carry over in a straightforward way, but a suitable test statistic and its sampling distribution under $H_0$ are less obvious. The summary shown here is based on the Wikipedia article \href{https://en.wikipedia.org/wiki/Multivariate_analysis_of_variance}{\emph{Multivariate analysis of variance}}, again with modified notation.
+
+\begin{itemize}
+\item data are vectors $\vy_i\in \setR^d$ with group membership $g_i$
+\item assumption: each group $j$ has a multivariate normal distribution $N(\vmu_j, \matSigma)$ with equal covariance matrix $\matSigma$, but possibly different group means $\vmu_j$
+\item MANOVA null hypothesis $H_0: \vmu_1 = \ldots = \vmu_g$
+\item overall mean $\vm$ and group means $\vm_j$ are
+  \begin{equation}
+    \label{eq:lda:manova:means}
+    \vm = \frac1n \sum_{i=1}^n \vy_i \qquad
+    \vm_j = \frac1{n_j} \sum_{g_i = j} \vy_i
+  \end{equation}
+\item instead of a sum of squares, we partition the \textbf{covariance matrix} $\mathbf{C}$ given by
+  \begin{equation}
+    \label{eq:lda:manova:C}
+    \mathbf{C} = \frac1{n-1} \sum_{i=1}^n (\vy_i - \vm) (\vy_i - \vm)\T
+  \end{equation}
+  where the transpose cross-product computes all squares and products of $\vy_i - \vm$
+\item we partition $\mathbf{C}$ into within-group and between-group covariance matrices in the form
+  \[
+    (n-1) \mathbf{C} = (n - g) \mathbf{W} + (g - 1) \mathbf{B}
+  \]
+  with
+  \begin{align}
+    \label{eq:lda:manova:W}
+    \mathbf{W} &= \frac1{n - g} \sum_{i=1}^n (\vy_i - \vm_{g_i}) (\vy_i - \vm_{g_i})\T \\
+    \label{eq:lda:manova:B}
+    \mathbf{B} &= \frac1{g - 1} \sum_{j=1}^g n_j (\vm_j - \vm) (\vm_j - \vm)\T
+  \end{align}
+  \citep[cf.][191--192]{Bishop:06}
+\item according to the Wikipedia article \href{https://en.wikipedia.org/wiki/Multivariate_normal_distribution\#Parameter_estimation}{\emph{Multivariate normal distribution}}\footnote{but [\emph{citation needed}]} $\mathbf{C}$ is an unbiased estimator of $\matSigma$ under $H_0$; correspondingly, $\mathbf{W}$ is always an unbiased estimator of $\matSigma$ and $\mathbf{B}$ is under $H_0$
+\item this motivates $\mathbf{A} = \mathbf{B} \mathbf{W}^{-1}$ as a widely-used test criterion with $\mathbf{A}\approx \mathbf{I}$ under $H_0$; intuitively, $\mathbf{A}$ compares the shape and magnitude of the between-group covariance matrix against the within-group covariance matrix; it should, in particular, also detected cases where there are unexpectedly large differences between group means along an axis that has small within-group variance
+\item the precise choice of a test statistic is less obvious; common options include Wilks's lambda $\lambda_{\text{Wilks}} = \Det{\mathbf{I} + \mathbf{A}}^{-1}$ and the Lawley-Hotelling trace $\lambda_{\text{LH}} = \Trace{\mathbf{A}}$
+\item exact distributions of these test statistics under $H_0$ are not available, except for $g = 2$, where they reduce to Hotelling's $t^2$ distribution\footnote{but [\emph{citation needed}]}
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The LDA algorithm}
+\label{sec:lda:standard}
+
+\paragraph{Data set and goals of LDA}
+
+\begin{itemize}
+\item data are $n$ feature vectors $\vx_i \in \setR^d$ combined into a data matrix $\mathbf{X}\in \setR^{n\times d}$
+\item each data point is assigned to one of $g$ groups indicated by $g_i\in \set{1, \ldots, g}$; the sizes of the groups are $n_j = \abs{\set{g_i = j}}$
+\item LDA aims to find a one-dimensional projection (the \textbf{discriminant}) that maximises the separation between groups
+\item \citet{Fisher:36} and most textbooks introduce LDA for the special case $g = 2$ of two groups, for which an optimal discriminant can easily be derived; we formulate its generalisation to an arbitrary number of groups based on the $F$ statistic of ANOVA%
+  \footnote{our approach implicitly builds on the same distributional assumptions as ANOVA, which motivate the use of the $F$ statistic as an optimality criterion; they are not a necessary pre-requisite for application of the LDA method, but results will be most sensible if $\matSigma$ is roughly equal across all groups}
+\item \textbf{task}: find axis $\va\in \setR^d$ that maximises the $F$ statistic of discriminant scores $y_i = \va\T \vx_i$
+\end{itemize}
+
+\paragraph{Covariance matrix and projection}
+
+\begin{itemize}
+\item this more explicit derivation corresponds to the LDA algorithm described by \citet[331--332]{Venables:Ripley:02} and thus to (one variant of) its implementation in the MASS package
+\item overall mean $\vm$ and group means $\vm_j$ are given by
+  \begin{equation}
+    \label{eq:lda:means}
+    \vm = \frac1n \sum_{i=1}^n \vx_i \qquad
+    \vm_j = \frac1{n_j} \sum_{g_i = j} \vx_i
+  \end{equation}
+\item within-group and between-group \textbf{covariance matrices} are defined as in (\ref{eq:lda:manova:W}) and (\ref{eq:lda:manova:B})
+  \begin{align}
+    \label{eq:lda:W}
+    \mathbf{W} &= \frac1{n - g} \sum_{i=1}^n (\vx_i - \vm_{g_i}) (\vx_i - \vm_{g_i})\T \\
+    \label{eq:lda:B}
+    \mathbf{B} &= \frac1{g - 1} \sum_{j=1}^g n_j (\vm_j - \vm) (\vm_j - \vm)\T
+  \end{align}
+\item given an axis $\va\in \setR^d$, the one-dimensional discriminant scores of data points are $y_i = \va\T \vx_i$; due to linearity the overall and group means are $m = \va\T \vm$ and $m_j = \va\T \vm_j$
+\item hence the within-group variance (\ref{eq:lda:anova:W}) can be computed as
+  \begin{equation}
+    \label{eq:lda:discW}
+    \begin{split}
+      W &= \frac1{n - g} \sum_{i=1}^n (\va\T \vx_i - \va\T \vm_{g_i})^2 \\
+        &= \frac1{n - g} \sum_{i=1}^n (\va\T \vx_i - \va\T \vm_{g_i}) (\va\T \vx_i - \va\T \vm_{g_i})\T \\
+        &= \frac1{n - g} \sum_{i=1}^n \va\T (\vx_i - \vm_{g_i}) (\vx_i - \vm_{g_i})\T \va \\
+        &= \va\T \mathbf{W} \va
+    \end{split}
+  \end{equation}
+\item analogously the between-group variance (\ref{eq:lda:anova:B}) can be computed as
+  \begin{equation}
+    \label{eq:lda:discB}
+    B = \va\T \mathbf{B} \va
+  \end{equation}
+\end{itemize}
+
+\paragraph{Coordinate transformation}
+
+\begin{itemize}
+\item our goal is to find an axis $\va$ that maximises the test statistic $F = B / W$, so that we can most clearly reject $H_0$ of equal group means for the discriminant scores $y_i$
+\item a convenient approach starts by \textbf{sphering} the within-group covariance matrix $\mathbf{W}$ with a coordinate transformation $\vx' = \mathbf{S} \vx$ such that in the new coordinate system $\mathbf{W}' = \mathbf{I}$
+\item the homomorphism preserves overall and group means: $\vm' = \mathbf{S} \vm$ and $\vm'_j = \mathbf{S} \vm_j$
+\item the within-group covariance matrix $\mathbf{W}'$ in the new coordinate system is
+  \begin{equation}
+    \label{eq:lda:Wprime}
+    \begin{split}
+      \mathbf{W}'
+      &= \frac1{n-g} \sum_{i=1}^n (\vx'_i - \vm'_{g_i}) (\vx'_i - \vm'_{g_i})\T \\
+      &= \frac1{n-g} \sum_{i=1}^n (\mathbf{S}\vx_i - \mathbf{S}\vm_{g_i}) (\mathbf{S}\vx_i - \mathbf{S}\vm_{g_i})\T \\
+      &= \mathbf{S} \mathbf{W} \mathbf{S}\T
+    \end{split}
+  \end{equation}
+\item in the same way we can easily see that the between-group covariance matrix is $\mathbf{B}' = \mathbf{S} \mathbf{B} \mathbf{S}\T$
+\item a suitable coordinate transformation $\mathbf{S}$ can be derived from the \textbf{eigenvalue decomposition} of the symmetric, positive semidefinite matrix $\mathbf{W} = \mathbf{U} \mathbf{D} \mathbf{U}\T$ where $\mathbf{D}$ is the diagonal matrix of eigenvalues $\lambda_1 \geq \lambda_2 \geq \ldots \geq \lambda_d$ and the columns of $\mathbf{U}$ are the corresponding eigenvectors; note that $\mathbf{U}$ is an orthonormal matrix, i.e.\ $\mathbf{U}^{-1} = \mathbf{U}\T$ or $\mathbf{U} \mathbf{U}\T = \mathbf{U}\T \mathbf{U} = \mathbf{I}$
+\item prerequisite: $\mathbf{W}$ must be positive definite ($\lambda_d > 0$) with good condition number $\lambda_1 / \lambda_d$
+\item then we can define $\mathbf{S} = \mathbf{D}^{-\frac12} \mathbf{U}\T$ with inverse transformation $\mathbf{S}^{-1} = \mathbf{U} \mathbf{D}^{\frac12}$
+\end{itemize}
+
+\paragraph{LDA with multiple discriminants}
+
+\begin{itemize}
+\item for $g > 2$ it is usually necessary to consider a multi-dimensional \textbf{discriminant space} (of up to $g - 1$ dimensions) to achieve an optimal separation of groups
+\end{itemize}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Repeated-measures LDA}
+\label{sec:lda:repeated}
 
 \begin{itemize}
 \item \textbf{repeated-measures} as appropriate terminology: \url{https://en.wikipedia.org/wiki/Repeated_measures_design}
