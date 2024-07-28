@@ -26,6 +26,10 @@
 %% \matSigma ... covariance matrix \Sigma (which may need special bold formatting)
 \newcommand{\matSigma}{\boldsymbol{\Sigma}}
 
+%% vectors and matrices with tilde in discriminant space
+\newcommand{\tvm}[1][]{\Vector[#1]{\tilde{m}}} 
+\newcommand{\tmat}[1]{\mathbf{\tilde{#1}}}
+
 %% \T ... transpose of a matrix
 \newcommand{\T}{^{\text{T}}}
 
@@ -34,6 +38,7 @@
 %% \Det{...}, \det A ... determinant of a set of vectors / a matrix A
 %% \Trace{...} ... trace of a matrix A
 %% \Image{f}, \Kernel{f} ... image and kernel of a linear map
+%% \mathbf{D} = \Diag{\lambda_1, \ldots, \lambda_d} ... diagonal matrix
 \newcommand{\Span}[1]{\mathop{\text{sp}}\left(#1\right)}
 \newcommand{\Rank}[1]{\mathop{\text{rank}}\left(#1\right)}
 \newcommand{\Det}[1]{\mathop{\text{Det}}\left(#1\right)}
@@ -41,6 +46,7 @@
 \newcommand{\Trace}[1]{\mathop{\text{tr}}\left(#1\right)}
 \newcommand{\Image}[1]{\mathop{\text{Im}}\left(#1\right)}
 \newcommand{\Kernel}[1]{\mathop{\text{Ker}}\left(#1\right)}
+\newcommand{\Diag}[1]{\mathop{\text{diag}}\left(#1\right)}
 
 %% \dist[2]{\vx}{\vy} ... distance between two vectors (p-metric)
 \newcommand{\dist}[3][]{d_{#1}\left(#2, #3\right)}
@@ -49,6 +55,13 @@
 %% \sprod{\vu}{\vv} ... scalar product
 \newcommand{\sprod}[2]{\left\langle #1, #2 \right\rangle}
 \newcommand{\bigsprod}[2]{\bigl\langle #1, #2 \bigr\rangle}
+
+%% \Norm[2]{\vx} ... vector and matrix norm
+\newcommand{\Norm}[2][]{\left\| #2 \right\|_{#1}}
+\newcommand{\bigNorm}[2][]{\bigl\| #2 \bigr\|_{#1}}
+
+%% \llh ... Lawley-Hotelling trace as MANOVA criterion
+\newcommand{\llh}{\lambda_{\text{LH}}}
 
 
 %%% Local Variables: 

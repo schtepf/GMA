@@ -34,7 +34,7 @@
 \setlist{noitemsep}
 
 \usepackage{xcolor,tikz}
-\usepackage[textwidth=25mm,textsize=small,colorinlistoftodos,backgroundcolor=orange!80]{todonotes} % [disable] to hide all TODOs
+\usepackage[textwidth=25mm,textsize=footnotesize,colorinlistoftodos,backgroundcolor=orange!80]{todonotes} % [disable] to hide all TODOs
 
 \usepackage{natbib}
 \bibpunct[:~]{(}{)}{;}{a}{}{,}
@@ -74,7 +74,7 @@
   \begin{itemize}
   \item matrix of group means $\mathbf{M}\in \setR^{g\times d}$ as row vectors $\vm_j$
   \item group indicator matrix $\mathbf{G}\in \setR^{n\times g}$ with $g_{ij} = 1$ iff $X_i$ belongs to group $j$
-  \item $\overline{\vx}\in setR^d$ the overall mean $\overline{\vx} = \frac1n \sum_i \vx_i$
+  \item $\overline{\vx}\in \setR^d$ the overall mean $\overline{\vx} = \frac1n \sum_i \vx_i$
   \item the ``group predictions'' are given by $\mathbf{G}\mathbf{M}$
   \item within-group covariance matrix $\mathbf{W}$ and between-group covariance matrix $\mathbf{B}$ are
     \begin{equation}
@@ -204,7 +204,8 @@ Analysis of variance can be generalised to a comparison of group means for multi
 \subsection{The LDA algorithm}
 \label{sec:lda:standard}
 
-\paragraph{Data set and goals of LDA}
+\subsubsection{Data set and goals of LDA}
+\label{sec:lda:standard:goals}
 
 \begin{itemize}
 \item data are $n$ feature vectors $\vx_i \in \setR^d$ combined into a data matrix $\mathbf{X}\in \setR^{n\times d}$
@@ -215,7 +216,8 @@ Analysis of variance can be generalised to a comparison of group means for multi
 \item \textbf{task}: find axis $\va\in \setR^d$ that maximises the $F$ statistic of discriminant scores $y_i = \va\T \vx_i$
 \end{itemize}
 
-\paragraph{Covariance matrix and projection}
+\subsubsection{Covariance matrix and projection}
+\label{sec:lda:standard:covmat}
 
 \begin{itemize}
 \item this more explicit derivation corresponds to the LDA algorithm described by \citet[331--332]{Venables:Ripley:02} and thus to (one variant of) its implementation in the MASS package
@@ -248,12 +250,17 @@ Analysis of variance can be generalised to a comparison of group means for multi
     \label{eq:lda:discB}
     B = \va\T \mathbf{B} \va
   \end{equation}
+\item our goal is to find an axis $\va$ that maximises the test statistic $F = B / W$, so that we can most clearly reject $H_0$ of equal group means for the discriminant scores $y_i$
+  \begin{equation}
+    \label{eq:lda:F-stat}
+    F = \frac{B}{W} = \frac{ \va\T \mathbf{B} \va }{ \va\T \mathbf{W} \va }
+  \end{equation}
 \end{itemize}
 
-\paragraph{Coordinate transformation}
+\subsubsection{Coordinate transformation}
+\label{sec:lda:standard:sphering}
 
 \begin{itemize}
-\item our goal is to find an axis $\va$ that maximises the test statistic $F = B / W$, so that we can most clearly reject $H_0$ of equal group means for the discriminant scores $y_i$
 \item a convenient approach starts by \textbf{sphering} the within-group covariance matrix $\mathbf{W}$ with a coordinate transformation $\vx' = \mathbf{S} \vx$ such that in the new coordinate system $\mathbf{W}' = \mathbf{I}$
 \item the homomorphism preserves overall and group means: $\vm' = \mathbf{S} \vm$ and $\vm'_j = \mathbf{S} \vm_j$
 \item the within-group covariance matrix $\mathbf{W}'$ in the new coordinate system is
@@ -270,15 +277,100 @@ Analysis of variance can be generalised to a comparison of group means for multi
 \item a suitable coordinate transformation $\mathbf{S}$ can be derived from the \textbf{eigenvalue decomposition} of the symmetric, positive semidefinite matrix $\mathbf{W} = \mathbf{U} \mathbf{D} \mathbf{U}\T$ where $\mathbf{D}$ is the diagonal matrix of eigenvalues $\lambda_1 \geq \lambda_2 \geq \ldots \geq \lambda_d$ and the columns of $\mathbf{U}$ are the corresponding eigenvectors; note that $\mathbf{U}$ is an orthonormal matrix, i.e.\ $\mathbf{U}^{-1} = \mathbf{U}\T$ or $\mathbf{U} \mathbf{U}\T = \mathbf{U}\T \mathbf{U} = \mathbf{I}$
 \item prerequisite: $\mathbf{W}$ must be positive definite ($\lambda_d > 0$) with good condition number $\lambda_1 / \lambda_d$
 \item then we can define $\mathbf{S} = \mathbf{D}^{-\frac12} \mathbf{U}\T$ with inverse transformation $\mathbf{S}^{-1} = \mathbf{U} \mathbf{D}^{\frac12}$
+\item within-group covariance matrix $\mathbf{W}'$ in the transformed coordinates:
+  \begin{equation}
+    \label{eq:lda:Wprime-I}
+    \mathbf{W}'
+    = \mathbf{S} \mathbf{W} \mathbf{S}\T
+    = \mathbf{D}^{-\frac12} \mathbf{U}\T ( \mathbf{U} \mathbf{D} \mathbf{U}\T ) \mathbf{U} \mathbf{D}^{-\frac12} 
+    = \mathbf{D}^{-\frac12} \mathbf{D} \mathbf{D}^{-\frac12}
+    = \mathbf{I}
+  \end{equation}
 \end{itemize}
 
-\paragraph{LDA with multiple discriminants}
+\subsubsection{LDA discriminant}
+\label{sec:lda:standard:discriminant}
+
+\begin{itemize}
+\item since the discriminant axis $\va$ describes a linear form $\vx \mapsto y = \va\T \vx$ it is subjected to the inverse transformation $(\va')\T = \va\T \mathbf{S}^{-1}$, which corresponds to the identity $\va = \mathbf{S}\T \va'$
+\item confirm that the F-statistic is invariant under these transformations:
+  \begin{equation}
+    \label{eq:lda:F-transformation}
+    F = \frac{B}{W} = \frac{ \va\T \mathbf{B} \va }{ \va\T \mathbf{W} \va }
+    = \frac{ (\va')\T \mathbf{S} \mathbf{B} \mathbf{S}\T \va' }{ (\va')\T \mathbf{S} \mathbf{W} \mathbf{S}\T \va' }
+    = \frac{ (\va')\T \mathbf{B}' \va' }{ (\va')\T \mathbf{W}' \va' }
+    = \frac{B'}{W'}
+  \end{equation}
+\item it is thus sufficient to find $\va'$ that maximises $F$ in the transformed coordinates:
+  \begin{equation}
+    \label{eq:lda:Fprime}
+    \frac{B'}{W'}
+    = \frac{ (\va')\T \mathbf{B}' \va' }{ (\va')\T \mathbf{W}' \va' }
+    = \frac{ (\va')\T \mathbf{B}' \va' }{ (\va')\T \va' }
+    = \frac{ (\va')\T \mathbf{B}' \va' }{ \norm{\va'}^2 }    
+  \end{equation}
+  or equivalently maximise $(\va')\T \mathbf{B}' \va'$ under the constraint $\norm{\va'} = 1$
+\item it is well-known that the solution is given by the first eigenvector $\vv_1$ of $\mathbf{B'}$; this is also easy to see: for every eigenvector $\vv_i$ we have $\norm{\vv_i} = 1$ and $\vv_i\T \mathbf{B}' \vv_i = \mu_i$ the corresponding eigenvalue, so the best choice is $\va' = \vv_1$ with the largest eigenvalue $\mu_1$
+\item the optimal discriminant axis in original coordinates is thus $\va = \mathbf{S}\T \vv_1$
+\end{itemize}
+
+\subsubsection{LDA with multiple discriminants}
+\label{sec:lda:standard:multiple}
 
 \begin{itemize}
 \item for $g > 2$ it is usually necessary to consider a multi-dimensional \textbf{discriminant space} (of up to $g - 1$ dimensions) to achieve an optimal separation of groups
+\item we thus have multiple discriminants $\va_1, \ldots, \va_r\in \setR^d$ describing linear forms $\vx \mapsto y_k = \va_k\T\vx$, which we collect as rows of the \textbf{discriminant matrix} $\mathbf{A}\in \setR^{r\times d}$, so that $\vy = \mathbf{A} \vx \in \setR^r$
+\item overall and group means in the \textbf{discriminant space} are $\tvm = \mathbf{A} \vm$ and $\tvm_j = \mathbf{A} \vm_j$ (due to linearity); within-group and between-group covariance matrices are obtained in analogy to (\ref{eq:lda:discW}) and (\ref{eq:lda:discB}) as
+  \begin{equation}
+    \label{eq:lda:tildeWB}
+    \tmat W = \mathbf{A} \mathbf{W} \mathbf{A}\T, \qquad
+    \tmat B = \mathbf{A} \mathbf{B} \mathbf{A}\T
+  \end{equation}
+\item for measuring separation of groups within the discriminant space we use the Lawley-Hotelling trace as a MANOVA test statistic:
+  \begin{equation}
+    \label{eq:lda:LH}
+    \llh(\mathbf{A}) = \Trace{\tmat B \tmat W^{-1}}
+  \end{equation}
+   our goal is to find a discriminant matrix $\mathbf{A}$ that maximises $\llh(\mathbf{A})$
+ \item a first important property of $\llh$ is its invariance under coordinate transformations in the discriminant space; for any coordinate transformation $\mathbf{S}\in \setR^{r\times r}$ we have in analogy to (\ref{eq:lda:Wprime})
+   \begin{equation}
+     \label{eq:lda:tildeWBtransform}
+     \tmat B\mapsto \mathbf{S} \tmat B \mathbf{S}\T,\qquad
+     \tmat W^{-1} \mapsto (\mathbf{S} \tmat W \mathbf{S}\T)^{-1}
+     = (\mathbf{S}\T)^{-1} \tmat W^{-1} \mathbf{S}^{-1}
+   \end{equation}
+   and hence
+   \begin{equation}
+     \label{eq:lda:LHtransform}
+     \llh \mapsto \Trace{ \mathbf{S} \tmat B \mathbf{S}\T (\mathbf{S}\T)^{-1} \tmat W^{-1} \mathbf{S}^{-1} }
+     = \Trace{ \mathbf{S} \tmat B \tmat W^{-1} \mathbf{S}^{-1} }
+     = \Trace{\tmat B \tmat W^{-1}}
+   \end{equation}
+   because of the \href{https://en.wikipedia.org/wiki/Trace_(linear_algebra)#Trace_of_a_product}{similarity invariance of the trace}, which follows from its cyclic property \citep[696, C.9]{Bishop:06}: $\Trace{\mathbf{S} \mathbf{A} \mathbf{S}^{-1}} = \Trace{\mathbf{S}^{-1} \mathbf{S} \mathbf{A}} = \Trace{\mathbf{A}}$ \citep[88]{Deisenroth:Faisal:Ong:20}
+ \item this means that only the subspace spanned by $\mathbf{A}$ is relevant, not the specific basis implied; we can thus assume without loss of generality that $\mathbf{A}$ is an orthogonal projection, i.e.\ its rows $\va_k\T$ are orthonormal and $\mathbf{A} \mathbf{A}\T = \mathbf{I}_r$
+ \item this enables us to simplify the optimisation problem by sphering $\mathbf{W}$ with the same coordinate transformation $\mathbf{S}$ as in Sec.~\ref{sec:lda:standard:sphering}
+   \[
+     \mathbf{W}' = \mathbf{S} \mathbf{W} \mathbf{S}\T = \mathbf{I},\qquad
+     \mathbf{B}' = \mathbf{S} \mathbf{B} \mathbf{S}\T
+   \]
+ \item using an orthogonal projection $\mathbf{A}'$ from the transformed coordinates to the discriminant space, eq.~(\ref{eq:lda:tildeWB}) becomes
+   \begin{equation}
+     \label{eq:lda:tildeWBprime}
+     \tmat W' = \mathbf{A}' \mathbf{W}' (\mathbf{A}')\T = \mathbf{A}' (\mathbf{A}')\T = \mathbf{I},\qquad
+     \tmat B' = \mathbf{A}' \mathbf{B}' (\mathbf{A}')\T
+   \end{equation}
+   and the $\llh$ statistic is reduced to
+   \begin{equation}
+     \label{eq:lda:LHprime}
+     \llh(\mathbf{A}') = \Trace{\mathbf{A}' \mathbf{B}' (\mathbf{A}')\T}
+     = \sum_{k=1}^r (\va_k')\T \mathbf{B}' \va_k'
+   \end{equation}
+ \item it stands to reason that $\llh(\mathbf{A}')$ is maximised by the first $r$ eigenvectors $\va_k' = \vv_k$ of $\mathbf{B}'$ and corresponding eigenvalues $\mu_k$ \citep[332]{Venables:Ripley:02}, with $\llh(\mathbf{A}') = \sum_{k=1}^r \mu_k$;%
+   \footnote{we will not attempt a more formal proof here, but it should be possible to derive optimality of this solution from the \href{https://en.wikipedia.org/wiki/Low-rank_approximation\#Proof_of_Eckart–Young–Mirsky_theorem_(for_Frobenius_norm)}{Eckart-Young-Mirsky} theorem for the Frobenius norm $\Norm[F]{\mathbf{B}'}$, orthogonal decomposition of the Frobenius norm, and the fact that $\Norm[F]{\mathbf{B}'} = \sum_k \mu_k$.}
+ \item discriminant axes in the original coordinate system are obtained as in Sec.~\ref{sec:lda:standard:discriminant} by back-transformation $\va_k = \mathbf{S}\T \va_k'$, or in matrix notation $\mathbf{A} = \mathbf{A}' \mathbf{S}$ (since $\va_k\T = (\va_k')\T \mathbf{S}$)
+ \item note that $\mathbf{A}$ is usually not an orthogonal projection after the back-transformation, but can be orthogonalised without affecting the $\llh$ criterion because of (\ref{eq:lda:LHtransform})
+ \item the same solution is also given by \citet[192]{Bishop:06}; a complete (but very condensed) proof based on direct optimisation of $\llh$ and other separation criteria can be found in \citep[446--452]{Fukunaga:90}
 \end{itemize}
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Repeated-measures LDA}
@@ -288,6 +380,26 @@ Analysis of variance can be generalised to a comparison of group means for multi
 \item \textbf{repeated-measures} as appropriate terminology: \url{https://en.wikipedia.org/wiki/Repeated_measures_design}
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Implementation}
+\label{sec:lda:implement}
+
+A naive straightforward implementation of LDA consists of the following steps:
+
+\begin{enumerate}
+\item Compute between-group variance matrix $\mathbf{B}$ and within-group variance matrix $\mathbf{W}$ according to (\ref{eq:lda:W}) and (\ref{eq:lda:B}).\todo{or corresponding eq.\ for repeated-measures LDA}
+\item Determine eigenvalue decomposition $\mathbf{W} = \mathbf{U} \mathbf{D} \mathbf{U}\T$ with $\mathbf{D} = \Diag{\lambda_1, \ldots, \lambda_d}$, checking that $\mathbf{W}$ has full rank and a reasonable condition number, i.e.\ $\lambda_d > \epsilon \lambda_1$ (based on \texttt{tol=}).
+\item Construct coordinate transformation $\mathbf{S} = \mathbf{D}^{-\frac12} \mathbf{U}\T$ for sphering $\mathbf{W}$ as welll as its inverse $\mathbf{S}^{-1} = \mathbf{U} \mathbf{D}^{\frac12}$.\todo{Is $\mathbf{S}^{-1}$ really needed?}
+\item Compute between-group variance matrix $\mathbf{B}' = \mathbf{S} \mathbf{B} \mathbf{S}\T$ in the new coordinate system.
+\item Determine eigenvalue decomposition $\mathbf{B}' = \mathbf{V} \mathbf{E} \mathbf{V}\T$ with $\mathbf{E} = \Diag{\mu_1, \mu_2, \ldots}$.
+\item Choose number $r$ of discriminant axes such that $r\leq g-1$, $r\leq \Rank{\mathbf{B}'}$ and $\mu_r > \epsilon \mu_1$ (or perhaps some $R^2$-like criterion).
+\item Construct orthogonal discriminant projection $\mathbf{A}' = \mathbf{V}_r\T$, or perhaps $\mathbf{A}' = \mathbf{E}^{-\frac12} \mathbf{V}_r\T$ for equal separation along all discriminant axes; then transform to orginal coordinates $\mathbf{A} = \mathbf{A}' \mathbf{S}$. If the function returns discriminants as column vectors, this can be shortened to $\mathbf{A}\T = \mathbf{S}\T \mathbf{V}_r \bigl[ \mathbf{E}^{-\frac12} \bigr]$.
+\item Obtain discriminant scores as $\mathbf{Y} = \mathbf{X} \mathbf{A}\T$.
+\end{enumerate}
+
+\todo[inline]{extend sketch to detailed implementation with all equations and algorithms, in particular computing $\mathbf{B}$ and $\mathbf{W}$}
+
+\todo[inline]{improved (?) implementation with SVD of factors of $\mathbf{W}$ and $\mathbf{B}'$}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
