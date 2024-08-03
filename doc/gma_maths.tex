@@ -368,7 +368,8 @@ Analysis of variance can be generalised to a comparison of group means for multi
  \item it stands to reason that $\llh(\mathbf{A}')$ is maximised by the first $r$ eigenvectors $\va_k' = \vv_k$ of $\mathbf{B}'$ and corresponding eigenvalues $\mu_k$ \citep[332]{Venables:Ripley:02}, with $\llh(\mathbf{A}') = \sum_{k=1}^r \mu_k$;%
    \footnote{we will not attempt a more formal proof here, but it should be possible to derive optimality of this solution from the \href{https://en.wikipedia.org/wiki/Low-rank_approximation\#Proof_of_Eckart–Young–Mirsky_theorem_(for_Frobenius_norm)}{Eckart-Young-Mirsky} theorem for the Frobenius norm $\Norm[F]{\mathbf{B}'}$, orthogonal decomposition of the Frobenius norm, and the fact that $\Norm[F]{\mathbf{B}'} = \sum_k \mu_k$.}
  \item discriminant axes in the original coordinate system are obtained as in Sec.~\ref{sec:lda:standard:discriminant} by back-transformation $\va_k = \mathbf{S}\T \va_k'$, or in matrix notation $\mathbf{A} = \mathbf{A}' \mathbf{S}$ (since $\va_k\T = (\va_k')\T \mathbf{S}$)
- \item note that $\mathbf{A}$ is usually not an orthogonal projection after the back-transformation, but can be orthogonalised without affecting the $\llh$ criterion because of (\ref{eq:lda:LHtransform})
+ \item note that $\mathbf{A}$ is usually not an orthogonal projection after the back-transformation, but can be orthogonalised without affecting the $\llh$ criterion because of (\ref{eq:lda:LHtransform}); our choice of $\mathbf{A}'$ ensures a reasonable scaling of the discriminant space with roughly unit spherical within-group variance%
+   \footnote{The coordinate transformation $\mathbf{S}$ ensures that average within-group variance is a unit sphere ($\mathbf{W}' = \mathbf{I}$). Since $\mathbf{A}'$ is chosen to be an orthogonal projection, it preserves the spherical property but reduces variance to the proportion captured by the discriminant space.}
  \item the same solution is also given by \citet[192]{Bishop:06}; a complete (but very condensed) proof based on direct optimisation of $\llh$ and other separation criteria can be found in \citep[446--452]{Fukunaga:90}
 \end{itemize}
 
@@ -388,18 +389,46 @@ A naive straightforward implementation of LDA consists of the following steps:
 
 \begin{enumerate}
 \item Compute between-group variance matrix $\mathbf{B}$ and within-group variance matrix $\mathbf{W}$ according to (\ref{eq:lda:W}) and (\ref{eq:lda:B}).\todo{or corresponding eq.\ for repeated-measures LDA}
+  \begin{itemize}
+  \item let $\mathbf{M}\in \setR^{g\times d}$ the row matrix of group means and $\mathbf{X}_M\in \setR^{n\times d}$ the row matrix containing group means $\vm_{g_i}$ for each data point $\vx_i$
+  \item define $\mathbf{X}_W = \mathbf{X} - \mathbf{X}_M$ so that $\mathbf{W} = \frac1{n - g} (\mathbf{X}_W)\T \mathbf{X}_W$
+  \item define $\mathbf{X}_B = \mathbf{X}_M - \vone_n \vm\T$ so that $\mathbf{B} = \frac{1}{g - 1} (\mathbf{X}_B)\T \mathbf{X}_B$ (because $\vm_j$ is repeated $n_j$ times)
+  \item $\mathbf{B}$ can be computed more efficiently from $\mathbf{M}_B = \Diag{n_1, \ldots, n_g}^{\frac12} (\mathbf{M} - \vone_g \vm\T)$
+  \end{itemize}
 \item Determine eigenvalue decomposition $\mathbf{W} = \mathbf{U} \mathbf{D} \mathbf{U}\T$ with $\mathbf{D} = \Diag{\lambda_1, \ldots, \lambda_d}$, checking that $\mathbf{W}$ has full rank and a reasonable condition number, i.e.\ $\lambda_d > \epsilon \lambda_1$ (based on \texttt{tol=}).
-\item Construct coordinate transformation $\mathbf{S} = \mathbf{D}^{-\frac12} \mathbf{U}\T$ for sphering $\mathbf{W}$ as welll as its inverse $\mathbf{S}^{-1} = \mathbf{U} \mathbf{D}^{\frac12}$.\todo{Is $\mathbf{S}^{-1}$ really needed?}
+\item Construct coordinate transformation $\mathbf{S} = \mathbf{D}^{-\frac12} \mathbf{U}\T$ for sphering $\mathbf{W}$. Its inverse is given by $\mathbf{S}^{-1} = \mathbf{U} \mathbf{D}^{\frac12}$, but doesn't seem to be needed by the algorithm.
 \item Compute between-group variance matrix $\mathbf{B}' = \mathbf{S} \mathbf{B} \mathbf{S}\T$ in the new coordinate system.
 \item Determine eigenvalue decomposition $\mathbf{B}' = \mathbf{V} \mathbf{E} \mathbf{V}\T$ with $\mathbf{E} = \Diag{\mu_1, \mu_2, \ldots}$.
 \item Choose number $r$ of discriminant axes such that $r\leq g-1$, $r\leq \Rank{\mathbf{B}'}$ and $\mu_r > \epsilon \mu_1$ (or perhaps some $R^2$-like criterion).
-\item Construct orthogonal discriminant projection $\mathbf{A}' = \mathbf{V}_r\T$, or perhaps $\mathbf{A}' = \mathbf{E}^{-\frac12} \mathbf{V}_r\T$ for equal separation along all discriminant axes; then transform to orginal coordinates $\mathbf{A} = \mathbf{A}' \mathbf{S}$. If the function returns discriminants as column vectors, this can be shortened to $\mathbf{A}\T = \mathbf{S}\T \mathbf{V}_r \bigl[ \mathbf{E}^{-\frac12} \bigr]$.
+\item Construct orthogonal discriminant projection $\mathbf{A}' = \mathbf{V}_r\T$, then transform to original coordinates $\mathbf{A} = \mathbf{A}' \mathbf{S}$ (or simply $\mathbf{A}\T = \mathbf{S}\T \mathbf{V}_r$ to obtain discriminants as column vectors).
 \item Obtain discriminant scores as $\mathbf{Y} = \mathbf{X} \mathbf{A}\T$.
 \end{enumerate}
 
-\todo[inline]{extend sketch to detailed implementation with all equations and algorithms, in particular computing $\mathbf{B}$ and $\mathbf{W}$}
+To avoid unnecessary computation and potential rounding errors, it is possible to determine the required eigenvectors of $\mathbf{W}$ and $\mathbf{B}'$ from singular-value decomposition (SVD) of $\mathbf{X}_W$ and $\mathbf{M}_B$ without computing the full covariance matrices:
 
-\todo[inline]{improved (?) implementation with SVD of factors of $\mathbf{W}$ and $\mathbf{B}'$}
+\begin{itemize}
+\item[2.] Compute the SVD $\mathbf{X}_W = \mathbf{U}_W \matSigma_W \mathbf{V}_W\T$. Since
+  \[
+    \mathbf{W} = \frac1{n - g} (\mathbf{X}_W)\T \mathbf{X}_W
+    = \frac1{n - g} \mathbf{V}_W \matSigma_W \mathbf{U}_W\T \mathbf{U}_W \matSigma_W \mathbf{V}_W\T
+    = \frac1{n - g} \mathbf{V}_W \matSigma_W^2 \mathbf{V}_W\T
+  \]
+  its eigenvalue decomposition is given by $\mathbf{U} = \mathbf{V}_W$ and $\mathbf{D}^{\frac12} = \frac1{\sqrt{n - g}} \matSigma_W$
+\item[4.] We have
+  \[
+    \mathbf{B}' = \frac1{g - 1} \mathbf{S} (\mathbf{M}_B)\T \mathbf{M}_B \mathbf{S}\T
+     = \frac1{g - 1} (\mathbf{M}_B')\T \mathbf{M}_B'
+   \]
+   with $\mathbf{M}_B' = \mathbf{M}_B \mathbf{S}\T$
+\item[5.] Compute the SVD $\mathbf{M}_B' = \mathbf{U}_{B} \matSigma_{B} \mathbf{V}_B\T$. Since
+  \[
+    \mathbf{B}' = \frac1{g - 1} (\mathbf{M}_B')\T \mathbf{M}_B'
+    = \frac1{g - 1} \mathbf{V}_B \matSigma_B^2 \mathbf{V}_B\T
+  \]
+  its eigenvalue decomposition is given by $\mathbf{V} = \mathbf{V}_B$ and $\mathbf{E} = \frac1{g - 1} \matSigma_B^2$
+
+\end{itemize}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
