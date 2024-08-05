@@ -520,20 +520,28 @@ To avoid unnecessary computation and potential rounding errors, it is possible t
   its eigenvalue decomposition is given by $\mathbf{V} = \mathbf{V}_B$ and $\mathbf{E} = \frac1{g - 1} \matSigma_B^2$
 \end{itemize}
 
-The LDA implementation \texttt{MASS::lda()} allows users to specify prior probabilities $p_j$ of groups rather than using their distribution in the data (i.e.\ $p_j = n_j / n$). This is easily integrated into our algorithm by setting $n_j = p_j n$. The easiest and most important case are equal group weights, i.e.\ $n_j = n / g$, which also generalises to repeated-measures LDA without complications.
+The LDA implementation \texttt{MASS::lda()} allows users to specify prior probabilities $p_j$ of groups rather than using their distribution in the data (i.e.\ $p_j = n_j / n$). This is easily integrated into our algorithm by setting $n_j = p_j n$. The easiest and most important case are equal group weights, i.e.\ $n_j = n / g$, which is implemented through two small changes:
 
-Repeated-measures LDA can easily be implemented now by simply changing the definition of $\mathbf{W}$ and $\mathbf{B}$ according to eq.~(\ref{eq:lda:repeated:W}) and (\ref{eq:lda:repeated:B}).
+\begin{enumerate}
+\item[1.] In the formula for $\mathbf{M}_B$ use virtual group sizes $n_j = n / g$ and recompute the mean by averaging over group means $\vm = \frac1g \sum_{j=1}^g \vm_g$. Priors cannot be adjusted in the approach via $\mathbf{X}_B$.
+\end{enumerate}
 
-\begin{itemize}
-\item let $\mathbf{M}\in \setR^{cg\times d}$ the row matrix of cell means $\vm_{jk}$, and $\mathbf{M}_{+C} \in \setR^{cg\times d}$ the row matrix containing the cohort meaning $\vm_{+k}$ corresponding to each cell mean $\vm_{jk}$
-\item let $\mathbf{X}_M\in \setR^{n\times d}$ the row matrix containing cell means $\vm_{g_i c_i}$ for each data point $\vx_i$
-\item define $\mathbf{X}_W = \mathbf{X} - \mathbf{X}_M$ so that $\mathbf{W} = \frac1{n - cg} (\mathbf{X}_W)\T \mathbf{X}_W$
-\item define $\mathbf{M}_B = \Diag{n_{11}, \ldots, n_{cg}}^{\frac12} (\mathbf{M} - \mathbf{M}_{+C})$ so that $\mathbf{B} = \frac{1}{c (g - 1)} (\mathbf{M}_B)\T \mathbf{M}_B$
-\item for the implementation it might be easier to determine the row matrix $\mathbf{X}_C\in \setR^{n\times d}$ of cohort means $\vm_{+ c_i}$ for each data point $\vx_i$ and set $\mathbf{X}_B = \mathbf{X}_M - \mathbf{X}_C$ so that $\mathbf{B} = \frac{1}{c (g - 1)} (\mathbf{X}_B)\T \mathbf{X}_B$
-\end{itemize}
+Repeated-measures LDA can now easily be implemented by changing the definitions of $\mathbf{W}$ and $\mathbf{B}$:
 
-Note that the rank of the discriminant space may be larger with only $r \leq c(g - 1)$ guaranteed.  All other steps of the algorithm remain exactly as above.
-
+\begin{enumerate}
+\item[1.] Adjust $\mathbf{W}$ and $\mathbf{B}$ according to eq.~(\ref{eq:lda:repeated:W}) and (\ref{eq:lda:repeated:B}).
+  \begin{itemize}
+  \item let $\mathbf{M}\in \setR^{cg\times d}$ the row matrix of cell means $\vm_{jk}$, and $\mathbf{M}_{+C} \in \setR^{cg\times d}$ the row matrix containing the cohort mean $\vm_{+k}$ corresponding to each cell mean $\vm_{jk}$
+  \item let $\mathbf{X}_M\in \setR^{n\times d}$ the row matrix containing cell means $\vm_{g_i c_i}$ for each data point $\vx_i$
+  \item define $\mathbf{X}_W = \mathbf{X} - \mathbf{X}_M$ so that $\mathbf{W} = \frac1{n - cg} (\mathbf{X}_W)\T \mathbf{X}_W$
+  \item define $\mathbf{M}_B = \Diag{n_{11}, \ldots, n_{cg}}^{\frac12} (\mathbf{M} - \mathbf{M}_{+C})$ so that $\mathbf{B} = \frac{1}{c (g - 1)} (\mathbf{M}_B)\T \mathbf{M}_B$
+  \item for a prior with equal group weights, use virtual cell sizes $n_{jk} = n_{+k} / g$ and recompute cohort means by averaging over cells: $\vm_{+k} = \frac1g \sum_{j=1}^g \vm_{jk}$
+  \item alternativey, determine the row matrix $\mathbf{X}_C\in \setR^{n\times d}$ of cohort means $\vm_{+ c_i}$ for each data point $\vx_i$ and set $\mathbf{X}_B = \mathbf{X}_M - \mathbf{X}_C$ so that $\mathbf{B} = \frac{1}{c (g - 1)} (\mathbf{X}_B)\T \mathbf{X}_B$; adjusting the prior distribution is not possible in this case 
+  \end{itemize}
+\item[2.] Use scaling factor $\frac1{n - cg}$ instead of $\frac1{n - g}$ in the SVD-based approach.
+\item[5.] Use scaling factor $\frac1{c (g - 1)}$ instead of $\frac1{g - 1}$ in the SVD-based approach.
+\item[6.] Note that the rank of the discriminant space may be larger with only $r \leq c(g - 1)$ guaranteed.
+\end{enumerate}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
