@@ -378,8 +378,100 @@ Analysis of variance can be generalised to a comparison of group means for multi
 \label{sec:lda:repeated}
 
 \begin{itemize}
-\item \textbf{repeated-measures} as appropriate terminology: \url{https://en.wikipedia.org/wiki/Repeated_measures_design}
+\item standard LDA aims to minimise within-group variance and maximise between-group variance; but in GMA data points sometimes come from multiple \textbf{cohorts}, whose differences should not affect the discriminant space; a pertinent example is a study of register variation across varieties of English \citep{Neumann:Evert:21}, where the groups to be separated are text categories and cohorts correspond to the different language varieties
+\item standard LDA incorporates between-cohort variance in the within-group variance, and thus aims to ``hide'' between-cohort variance in the discriminant space (to minimise within-group variance); on the other hand, group means are averaged across cohorts and possibly reduce between-group variance (if there are differences in the group structure between cohorts)
+\item in the example study, the authors' use of standard LDA may thus have actively played down general differences between language varieties (in order to minimise within-group variance) as well as register divergence between varieties (which is averaged out in the between-group variance)
+\item it seems more appropriate to treat such cases as a \textbf{repeated-measures design}\footnote{\url{https://en.wikipedia.org/wiki/Repeated_measures_design}} and develop a repeated-measures version of LDA
 \end{itemize}
+
+As in Sec.~\ref{sec:lda:anova} we use repeated-measures ANOVA as a starting point, which is a special case of a two-way layout \citep[772-781]{Bishop:06}. Our notation is as follows:
+\begin{itemize}
+\item data: $n$ observations $y_i\in \setR$ belonging to $g$ groups and $c$ cohorts; $g_i\in \set{1,\ldots,g}$ indicates group membership of $y_i$; $c_i\in \set{1,\ldots, c}$ indicates cohort membership
+\item the size of each cell in the two-way layout is given by $n_{jk} = \abs{\set{g_i = j \wedge c_i = k}}$ for group $j$ and cohort $k$; overall group sizes are $n_{j+} = \abs{\set{g_i = j}} = \sum_k n_{jk}$; overall cohort sizes are $n_{+k} = \abs{\set{c_i = k}} = \sum_j n_{jk}$
+\item overall mean $m$ as well as the cell means $m_{jk}$, group means $m_{j+}$, and cohort means $m_{+k}$ are given below
+  \begin{equation}
+    \label{eq:lda:ranova:means}
+    \begin{aligned}
+      m &= \frac1n \sum_{i=1}^n y_i
+      &\quad m_{j+} &= \frac1{n_{j+}} \sum_{g_i = j} y_i = \frac1{n_{j+}} \sum_{k=1}^c n_{jk} m_{jk} \\
+      m_{jk} &= \frac1{n_{jk}} \sum_{g_i = j \wedge c_i = k} y_i 
+      &\quad m_{+k} &= \frac1{n_{+k}} \sum_{c_i = k} y_i = \frac1{n_{+k}} \sum_{j=1}^g n_{jk} m_{jk} 
+    \end{aligned}
+  \end{equation}
+\item the overall sum of squares $S^2$ can be partitioned into four components
+  \begin{equation}
+    \label{eq:lda:ranova:ss-partition}
+    S^2 = S_g^2 + S^2_c + S^2_{g:c} + S^2_{\text{res}}
+  \end{equation}
+  where $S^2_{g:c}$ represents the interaction between groups and cohorts and $S^2_{\text{res}}$ is the residual within-cell variance; the five terms are given by
+  \begin{equation}
+    \label{eq:lda:ranova:ss-terms}
+    \begin{split}
+      S^2 &= \sum_{i=1}^n (y_i - m)^2 \\
+      S^2_g &= \sum_{j=1}^g n_{j+} (m_{j+} - m)^2 \\
+      S^2_c &= \sum_{k=1}^c n_{+k} (m_{+k} - m)^2 \\
+      S^2_{g:c} &= \sum_{j=1}^g \sum_{k=1}^c n_{jk} (m_{jk} - m_{j+} - m_{+k} + m)^2 \\
+      S^2_{\text{res}} &= \sum_{j=1}^g \sum_{k=1}^c \sum_{g_i = j\wedge c_i = k} (y_i - m_{jk})^2 = \sum_{i=1}^n (y_i - m_{g_i c_i})^2
+    \end{split}
+  \end{equation}
+  \citep[775--776]{Bishop:06}
+\item various ANOVA hypotheses can be tested by comparing different components of the sum of squares against $S^2_{\text{res}}$, though the resulting ratios are F-scores only for equal cell sizes $n_{jk}$ \citep[777--779]{Bishop:06}
+\item we are not interested in differences between cohorts $S^2_c$; the appropriate test is thus for a nested effect of groups within varieties by comparing $S^2_g + S^2_{g:c} = S^2_{c/g}$ against $S^2_{\text{res}}$; in other terms, our ANOVA test partitions the within-cohort variance1
+  \[
+    S^2 - S^2_c = S^2_{c/g} + S^2_{\text{res}}
+  \]
+\item the nested sum of squares simplifies to
+  \begin{equation}
+    \label{eq:lda:ranova:ss-nested}
+    S^2_{c/g} = \sum_{j=1}^g \sum_{k=1}^c n_{jk} (m_{jk} - m_{+k})^2 
+  \end{equation}
+  which can be seen from (\ref{eq:lda:ranova:means}) and (\ref{eq:lda:ranova:ss-terms}):
+  \begin{equation*}
+    \begin{split}
+      S^2_{g:c}
+      &= \sum_{j=1}^g \sum_{k=1}^c n_{jk} ((m_{jk} - m_{+k}) - (m_{j+} - m))^2 \\
+      &= \underbrace{ \sum_{j=1}^g \sum_{k=1}^c n_{jk} (m_{jk} - m_{+k})^2 }_{S^2_{c/g}}
+        + \underbrace{ \sum_{j=1}^g \sum_{k=1}^c n_{jk} (m_{j+} - m)^2 }_{S^2_g}
+        - 2 \sum_{j=1}^g \sum_{k=1}^c n_{jk} (m_{jk} - m_{+k})(m_{j+} - m) \\
+      &= S^2_{c/g} + S^2_g - 2 \sum_{j=1}^g (m_{j+} - m)
+        \underbrace{ \sum_{k=1}^c n_{jk} (m_{jk} - m_{+k}) }_{n_{j+} (m_{j+} - m)} \\
+      &= S^2_{c/g} + S^2_g - 2 \sum_{j=1}^g n_{j+} (m_{j+} - m)^2
+        = S^2_{c/g} + S^2_g - 2 S^2_g
+    \end{split}
+  \end{equation*}
+\item the corresponding within-nested-group and between-nested-group variances are 
+  \begin{equation}
+    \label{eq:lda:ranova:WB}
+    W = \frac{ S^2_{\text{res}} }{ n - cg } \qquad
+    B = \frac{ S^2_{c/g} }{ c(g - 1) }
+  \end{equation}
+  \citep[778, eq.~(11.8.14)]{Bishop:06}; note that the df add up to $n - c$ for $S^2 - S^2_c$
+\end{itemize}
+
+\textbf{Repeated-measures LDA} simply changes the definitions of means and covariance matrices $\mathbf{W}, \mathbf{B}$ from Sec.~\ref{sec:lda:standard} to match eq.~(\ref{eq:lda:ranova:means})--~(\ref{eq:lda:ranova:WB}). All other steps of the algorithm remain valid as described.
+\begin{itemize}
+\item data are $n$ feature vectors $\vx_i \in \setR^d$ combined into a data matrix $\mathbf{X}\in \setR^{n\times d}$
+\item each data point is assigned to one of $g$ groups indicated by $g_i\in \set{1, \ldots, g}$ and one of $c$ cohorts indicated by $c_i\in \set{1, \ldots, c}$
+\item the size of each (group, cohort)-cell $(j, k)$ in this two-way layout is given by $n_{jk} = \abs{\set{g_i = j \wedge c_i = k}}$; overall group/cohort sizes are $n_{j+} = \abs{\set{g_i = j}} = \sum_k n_{jk}$ and $n_{+k} = \abs{\set{c_i = k}} = \sum_j n_{jk}$ 
+\item overall mean $\vm$ and the means for cells ($\vm_{jk}$), groups ($\vm_{j+}$), and cohorts ($\vm_{+k}$) are given by
+  \begin{equation}
+    \begin{aligned}
+      \label{eq:lda:repeated:means}
+      \vm &= \frac1n \sum_{i=1}^n \vx_i 
+      &\quad \vm_{j+} &= \frac1{n_{j+}} \sum_{g_i = j} \vx_i = \frac1{n_{j+}} \sum_{k=1}^c n_{jk} \vm_{jk} \\
+      \vm_{jk} &= \frac1{n_{jk}} \sum_{g_i = j \wedge c_i = k} \vx_i 
+      &\quad \vm_{+k} &= \frac1{n_{+k}} \sum_{c_i = k} \vx_i = \frac1{n_{+k}} \sum_{j=1}^g n_{jk} \vm_{jk}
+    \end{aligned}
+  \end{equation}
+\item nested-within-group and nested-between-group covariance matrices are generalised from eq.~(\ref{eq:lda:ranova:ss-terms}), (\ref{eq:lda:ranova:ss-nested}), (\ref{eq:lda:ranova:WB}) in analogy to (\ref{eq:lda:anova:W}) and (\ref{eq:lda:anova:B})
+  \begin{align}
+    \label{eq:lda:repeated:W}
+    \mathbf{W} &= \frac1{n - cg} \sum_{i=1}^n (\vx_i - \vm_{g_i c_i}) (\vx_i - \vm_{g_i c_i})\T \\
+    \label{eq:lda:repeated:B}
+    \mathbf{B} &= \frac1{c (g - 1)} \sum_{j=1}^g \sum_{k=1}^c n_{jk} (\vm_{jk} - \vm_{+k}) (\vm_{jk} - \vm_{+k})\T
+  \end{align}
+\end{itemize}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Implementation}
@@ -388,7 +480,7 @@ Analysis of variance can be generalised to a comparison of group means for multi
 A naive straightforward implementation of LDA consists of the following steps:
 
 \begin{enumerate}
-\item Compute between-group variance matrix $\mathbf{B}$ and within-group variance matrix $\mathbf{W}$ according to (\ref{eq:lda:W}) and (\ref{eq:lda:B}).\todo{or corresponding eq.\ for repeated-measures LDA}
+\item Compute between-group variance matrix $\mathbf{B}$ and within-group variance matrix $\mathbf{W}$ according to (\ref{eq:lda:W}) and (\ref{eq:lda:B}).
   \begin{itemize}
   \item let $\mathbf{M}\in \setR^{g\times d}$ the row matrix of group means and $\mathbf{X}_M\in \setR^{n\times d}$ the row matrix containing group means $\vm_{g_i}$ for each data point $\vx_i$
   \item define $\mathbf{X}_W = \mathbf{X} - \mathbf{X}_M$ so that $\mathbf{W} = \frac1{n - g} (\mathbf{X}_W)\T \mathbf{X}_W$
@@ -426,8 +518,22 @@ To avoid unnecessary computation and potential rounding errors, it is possible t
     = \frac1{g - 1} \mathbf{V}_B \matSigma_B^2 \mathbf{V}_B\T
   \]
   its eigenvalue decomposition is given by $\mathbf{V} = \mathbf{V}_B$ and $\mathbf{E} = \frac1{g - 1} \matSigma_B^2$
-
 \end{itemize}
+
+The LDA implementation \texttt{MASS::lda()} allows users to specify prior probabilities $p_j$ of groups rather than using their distribution in the data (i.e.\ $p_j = n_j / n$). This is easily integrated into our algorithm by setting $n_j = p_j n$. The easiest and most important case are equal group weights, i.e.\ $n_j = n / g$, which also generalises to repeated-measures LDA without complications.
+
+Repeated-measures LDA can easily be implemented now by simply changing the definition of $\mathbf{W}$ and $\mathbf{B}$ according to eq.~(\ref{eq:lda:repeated:W}) and (\ref{eq:lda:repeated:B}).
+
+\begin{itemize}
+\item let $\mathbf{M}\in \setR^{cg\times d}$ the row matrix of cell means $\vm_{jk}$, and $\mathbf{M}_{+C} \in \setR^{cg\times d}$ the row matrix containing the cohort meaning $\vm_{+k}$ corresponding to each cell mean $\vm_{jk}$
+\item let $\mathbf{X}_M\in \setR^{n\times d}$ the row matrix containing cell means $\vm_{g_i c_i}$ for each data point $\vx_i$
+\item define $\mathbf{X}_W = \mathbf{X} - \mathbf{X}_M$ so that $\mathbf{W} = \frac1{n - cg} (\mathbf{X}_W)\T \mathbf{X}_W$
+\item define $\mathbf{M}_B = \Diag{n_{11}, \ldots, n_{cg}}^{\frac12} (\mathbf{M} - \mathbf{M}_{+C})$ so that $\mathbf{B} = \frac{1}{c (g - 1)} (\mathbf{M}_B)\T \mathbf{M}_B$
+\item for the implementation it might be easier to determine the row matrix $\mathbf{X}_C\in \setR^{n\times d}$ of cohort means $\vm_{+ c_i}$ for each data point $\vx_i$ and set $\mathbf{X}_B = \mathbf{X}_M - \mathbf{X}_C$ so that $\mathbf{B} = \frac{1}{c (g - 1)} (\mathbf{X}_B)\T \mathbf{X}_B$
+\end{itemize}
+
+Note that the rank of the discriminant space may be larger with only $r \leq c(g - 1)$ guaranteed.  All other steps of the algorithm remain exactly as above.
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
