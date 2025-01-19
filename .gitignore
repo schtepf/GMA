@@ -1,3 +1,11 @@
+## R / RStudio
+.Rproj.user
+*.Rproj
+
+## Backup and system files
+*~
+.DS_Store
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
