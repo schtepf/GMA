@@ -2,7 +2,7 @@
 % Please edit documentation in R/pairs_plot.R
 \name{gma.pairs}
 \alias{gma.pairs}
-\title{Scatterplot Matrix for GMA Focus Spaces}
+\title{Scatterplot Matrix as Visualisation for GMA}
 \usage{
 gma.pairs(
   M,
@@ -66,7 +66,7 @@ That is, ranges have the same width on each axis, but are shifted to center the 
 
 \item{compact}{if TRUE, only the upper triangle of scatterplots is shown and legends are moved to the lower triangle, for a more compact display}
 
-\item{dim}{use \code{lim=c(min, max)} to specify a fixed range for all coordinate axes,
+\item{lim}{use \code{lim=c(min, max)} to specify a fixed range for all coordinate axes,
 or choose individual ranges as an \eqn{n_{\text{dim}} \times 2}{n_dim x 2} matrix (overrides \code{iso=TRUE})}
 }
 \description{

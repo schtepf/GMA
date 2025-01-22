@@ -160,7 +160,7 @@ GMA <- R6Class("GMA", list(
       if (length(names) != d2) stop("length of names= doesn't match number of basis vectors")
       colnames(basis) <- names
     }
-    self$axes <- cbind(axes, basis) # extend list of original basis vectors
+    self$axes <- cbind(self$axes, basis) # extend list of original basis vectors
     colnames(Pnew) <- colnames(self$axes)
     self$P <- Pnew # orthonormal basis of new subspace
     
@@ -181,7 +181,7 @@ GMA <- R6Class("GMA", list(
   #' @param M data matrix of row or column vectors to be operated on
   #' @param FUN function applied to projected data matrix
   #' @param ... any additional arguments are passed to `FUN` after the transformed data matrix
-  #' @param space select desired subspace (space, complement, both), defaults to "space"
+  #' @param space select desired subspace (space, complement, both), defaults to "focus"
   #'   - `focus`: orthogonal projection into focus space (default)
   #'   - `complement` orthogonal projection into complement space
   #'   - `both`: transform into orthonormal basis of focus space + complement
@@ -193,7 +193,7 @@ GMA <- R6Class("GMA", list(
   subspace.apply = function (M, FUN, ..., space=c("focus", "both", "complement"), dim=NULL, byrow.in=byrow, byrow.out=byrow, byrow=TRUE) {
     space <- match.arg(space)
     n.in <- if (byrow.in) ncol(M) else nrow(M)
-    if (n.in != n) stop("dimensionality of data matrix doesn't match GMA space")
+    if (n.in != self$n) stop("dimensionality of data matrix doesn't match GMA space")
     P. <- self$basis(space, dim)
     d <- ncol(P.)
     M1 <- if (byrow.in) M %*% P. else crossprod(P., M)
@@ -308,7 +308,7 @@ GMA <- R6Class("GMA", list(
     P1 <- self$P[, dim, drop=FALSE] # subspace for the rotation (of dimensionality d)
     d <- length(dim)
     if (!is.null(basis) && inherits(basis, "GMA")) {
-      basis <- basis$basis("space")
+      basis <- basis$basis("focus")
       if (ncol(basis) > d) basis[, 1:d, drop=FALSE]
     }
     if (type == "pca") {
@@ -411,7 +411,7 @@ GMA <- R6Class("GMA", list(
       stop("not yet implemented")
     }
     self$P[, dim] <- P1.new
-    self$axes <- P # user-specified basis is invalidated, overwrite with orthonormal
+    self$axes <- self$P # user-specified basis is invalidated, overwrite with orthonormal
     self$rotated <- TRUE
     invisible(self)
   }
