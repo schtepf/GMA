@@ -2,7 +2,7 @@ Package: gmatools
 Type: Package
 Title: Geometric Multivariate Analysis in R
 Version: 0.1
-Date: 2025-01-15
+Date: 2024-12-24
 Authors@R: person("Stephanie", "Evert", role = c("aut", "cre"), email = "stephanie.evert@fau.de")
 Description: TODO.
 License: GPL (>= 3)
