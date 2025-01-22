@@ -45,6 +45,6 @@ It is always ensured that the colour range is symmetric around 0 so that zero we
 A \code{ggplot} object that has to be printed to display the graph.
 }
 \description{
-\strong{TODO: description}
+\strong{TODO DESCRIPTION}
 The \strong{ggplot2} package must be installed in order to use this function.
 }

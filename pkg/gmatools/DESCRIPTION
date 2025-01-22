@@ -11,8 +11,7 @@ Suggests:
     ggplot2,
     scales,
     rlang,
-    reshape2,
-    rgl
+    reshape2
 Encoding: UTF-8
 uRoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)

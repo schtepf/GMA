@@ -18,6 +18,12 @@
   M
 }
 
+## Similarliy inefficient substitute for rowNorms() and colNorms() limited to Euclidean norm
+.euclideanNorms <- function (M, byrow=TRUE) {
+  M <- M * M
+  if (byrow) sqrt(rowSums(M)) else sqrt(colSums(M))
+}
+
 ## Check that argument is a numeric matrix, optionally promoting vectors to column vectors
 .ensure.matrix <- function (M, message="argument", vector.ok=FALSE, minR=0, minC=0) {
   if (is.vector(M) && vector.ok) M <- t(t(M)) # promote to column vector, preserving names
