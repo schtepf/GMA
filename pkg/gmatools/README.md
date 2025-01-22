@@ -6,7 +6,7 @@
 
 **TODO** short description
 
-See [NEWS](News.md) for the current version of `gmatools` and recent changes.
+See [NEWS](NEWS.md) for the current version of `gmatools` and recent changes.
 
 ## Installation
 
