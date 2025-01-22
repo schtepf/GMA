@@ -1,3 +1,6 @@
-# gmatools 1.0
+# gmatools 0.1
 
-* Initial CRAN submission.
+- first experimental releaase on GitHub (2024-12-24)
+- can be installed with `devtools::install_github("schtepf/GMA/pkg/gmatools")`
+
+
