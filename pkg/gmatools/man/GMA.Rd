@@ -230,7 +230,7 @@ Only orthogonal transformations are allowed.
 
 \item{\code{...}}{any additional arguments are passed to \code{FUN} after the transformed data matrix}
 
-\item{\code{space}}{select desired subspace (space, complement, both), defaults to "space"
+\item{\code{space}}{select desired subspace (space, complement, both), defaults to "focus"
 \itemize{
 \item \code{focus}: orthogonal projection into focus space (default)
 \item \code{complement} orthogonal projection into complement space

@@ -16,7 +16,7 @@ build:
 	R CMD build gmatools
 
 check:	clean build $(PKG)
-	R CMD check --multiarch $(PKG)
+	R CMD check --as-cran $(PKG)
 
 install:	clean build $(PKG)
 	R CMD INSTALL $(PKG)

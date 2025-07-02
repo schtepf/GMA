@@ -1,19 +1,19 @@
 Package: gmatools
 Type: Package
 Title: Geometric Multivariate Analysis in R
-Version: 0.1
-Date: 2024-12-24
+Version: 0.1-1
+Date: 2025-07-01
 Authors@R: person("Stephanie", "Evert", role = c("aut", "cre"), email = "stephanie.evert@fau.de")
 Description: TODO.
 License: GPL (>= 3)
-Suggests: 
+Suggests:
     testthat (>= 3.0.0),
     ggplot2,
     scales,
     rlang,
-    reshape2
+    reshape2,
+    rgl
 Encoding: UTF-8
-uRoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 RoxygenNote: 7.3.2

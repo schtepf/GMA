@@ -1,10 +1,10 @@
 ## Scatterplot matrix display optimised for GMA studies
 
 #' Scatterplot Matrix as Visualisation for GMA
-#' 
+#'
 #' **TODO:**
 #' write a description
-#' 
+#'
 #' @param M a row matrix of data points to be plotted
 #' @param dims which dimensions of `M` to include in the scatterplot matrix (default: all)
 #' @param Meta a data frame of metadata corresponding to the data points in `Meta`
@@ -24,24 +24,25 @@
 #'        Specify a positive integer to set a random seed for reproducibility, or set to FALSE to keep original plotting order.
 #' @param gap distance between panels of the scatter plot matrix, in margin lines (default: 0.5)
 #' @param oma adjusted outer margins of individual panels for a more compact display (internal use)
-#' @param iso if TRUE, adjust ranges for all axes so that the scatterplots are isometric (provided that the overall plot has square aspect). 
+#' @param iso if TRUE, adjust ranges for all axes so that the scatterplots are isometric (provided that the overall plot has square aspect).
 #'        That is, ranges have the same width on each axis, but are shifted to center the data.
 #' @param compact if TRUE, only the upper triangle of scatterplots is shown and legends are moved to the lower triangle, for a more compact display
-#' @param lim use `lim=c(min, max)` to specify a fixed range for all coordinate axes, 
+#' @param lim use `lim=c(min, max)` to specify a fixed range for all coordinate axes,
 #'        or choose individual ranges as an \eqn{n_{\text{dim}} \times 2}{n_dim x 2} matrix (overrides `iso=TRUE`)
+#' @param ... further graphics parameters are passed through to the underlying plot functions
 #' @export
 #' @importFrom corpora alpha.col corpora.palette
 #' @importFrom graphics Axis box legend mtext par plot points strwidth text
 #' @importFrom grDevices dev.flush dev.hold
-gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch=NULL, col=NULL, 
-                       pch.vals=1:10, pch.cols=NULL, col.vals=corpora.palette("simple"), 
-                       cex=1, legend.cex=1.4*cex, randomize=TRUE, gap=.5, 
+gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch=NULL, col=NULL,
+                       pch.vals=1:10, pch.cols=NULL, col.vals=corpora.palette("simple"),
+                       cex=1, legend.cex=1.4*cex, randomize=TRUE, gap=.5,
                        oma=c(2,2,2,2), iso=FALSE, compact=FALSE, lim=NULL, ...) {
   if (is.null(dims)) dims <- seq_len(ncol(M))
   n.dim <- length(dims)
   stopifnot(n.dim >= 2)
   if (!all(dims %in% seq_len(ncol(M)))) stop("invalid dimensions selected")
-  
+
   if (!is.null(lim)) {
     if (is.matrix(lim)) {
       if (nrow(lim) != n.dim || ncol(lim) != 2) stop(sprintf("lim= must be a %d x 2 matrix or a vector c(min, max)", n.dim))
@@ -51,11 +52,11 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
       lim <- cbind(rep(lim[1], n.dim), rep(lim[2], n.dim))
     }
   }
-  
+
   select.expr <- substitute(select) # evaluate arguments in context of metadata
   pch.expr <- substitute(pch)
   col.expr <- substitute(col)
-  
+
   if (is.null(Meta)) {
     item.ids <- rownames(M)
     if (is.null(item.ids)) item.ids <- sprintf("%d04d", 1:nrow(M))
@@ -63,7 +64,7 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
   } else {
     if (nrow(Meta) != nrow(M)) stop("metadata table Meta must have the same number of rows in the same order as the data matrix M")
   }
-  
+
   select <- eval(select.expr, Meta, parent.frame())
   if (is.numeric(select)) {
     ## ensure that subset index is given as a logical vector (not as line numbers)
@@ -74,7 +75,7 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
   if (length(pch) == 1) pch <- rep(pch, nrow(M))  # NULL has length 0 and is not affected
   col <- eval(col.expr, Meta, parent.frame())
   if (length(col) == 1) col <- rep(col, nrow(M))
-  
+
   if (!is.null(pch)) {
     stopifnot(length(pch) == nrow(M))
     if (is.character(pch)) pch <- factor(pch)
@@ -90,7 +91,7 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
     if (!is.null(col)) col <- col[select]
   }
   labels <- if (compact || is.null(colnames(M))) rep("", n.dim) else colnames(M)[dims]
-  
+
   k <- if (compact && n.dim > 2) 2 else 1
   if (is.null(pch)) {
     pch <- rep(pch.vals[1], nrow(M))
@@ -109,7 +110,7 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
     }
     labels[k] <- ":pch:"; k <- k+1
   }
-  
+
   if (is.null(col)) {
     col <- rep(col.vals[1], nrow(M))
   } else {
@@ -126,12 +127,12 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
       labels[k] <- ":col:"; k <- k+1
     }
   }
-  
+
   if (!is.null(select) && alpha.select > 0) {
     ## fade out non-selected points by reducing their opacity
     col[!select] <- alpha.col(col[!select], alpha.select)
   }
-  
+
   my.panel <- function (x, y, label, ...) {
     if (label == ":pch:") legend(x, y, xjust=0.5, yjust=0.5, legend=pch.levels, pch=pch.vals[1:pch.n], col=pch.cols[1:pch.n], pt.cex=1.2, pt.lwd=1.2, cex=legend.cex, ncol=pch.ncol, bty="n") else
       if (label == ":col:") legend(x, y, xjust=0.5, yjust=0.5, legend=col.levels, fill=col.vals[1:col.n], border=col.vals[1:col.n], cex=legend.cex, ncol=col.ncol, bty="n") else
@@ -143,20 +144,20 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
         } else
           text(x, y, label, adj=c(0.5, 0.5), cex=legend.cex)
   }
-  
+
   if (randomize) {
     if (is.numeric(randomize)) set.seed(randomize)
-    nR <- nrow(M)    
+    nR <- nrow(M)
     idx <- sample.int(nR)
     pch <- pch[idx]
     col <- col[idx]
     M <- M[idx, , drop=FALSE]
   }
-  
+
   upper.panel <- points
   lower.panel <- if (compact) function (x, y, ...) {} else upper.panel
-  .pairsCompact(M[, dims], pch=pch, col=col, cex=cex, 
-                upper.panel=upper.panel, lower.panel=lower.panel, text.panel=my.panel, 
+  .pairsCompact(M[, dims], pch=pch, col=col, cex=cex,
+                upper.panel=upper.panel, lower.panel=lower.panel, text.panel=my.panel,
                 labels=labels, gap=gap, oma=oma, compact=compact, iso=iso, lim=lim, ...)
 }
 
@@ -179,7 +180,7 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
     textPanel <-
       function(x = 0.5, y = 0.5, txt, cex, font)
         text(x, y, txt, cex = cex, font = font)
-  
+
   localAxis <- function(side, x, y, xpd, bg, col=NULL, main, oma, ...) {
     ## Explicitly ignore any color argument passed in as
     ## it was most likely meant for the data points and
@@ -190,16 +191,16 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
     if(side %% 2L == 1L) Axis(x, side = side, xpd = xpd, ...)
     else Axis(y, side = side, xpd = xpd, ...)
   }
-  
+
   localPlot <- function(..., main, oma, font.main, cex.main) plot(...)
   localLowerPanel <- function(..., main, oma, font.main, cex.main)
     lower.panel(...)
   localUpperPanel <- function(..., main, oma, font.main, cex.main)
     upper.panel(...)
-  
+
   localDiagPanel <- function(..., main, oma, font.main, cex.main)
     diag.panel(...)
-  
+
   dots <- list(...); nmdots <- names(dots)
   if (!is.matrix(x)) {
     x <- as.data.frame(x)
@@ -217,12 +218,12 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
     upper.panel <- match.fun(upper.panel)
   if((has.diag  <- !is.null( diag.panel)) && !missing( diag.panel))
     diag.panel <- match.fun( diag.panel)
-  
+
   if(row1attop) {
     tmp <- lower.panel; lower.panel <- upper.panel; upper.panel <- tmp
     tmp <- has.lower; has.lower <- has.upper; has.upper <- tmp
   }
-  
+
   nc <- ncol(x)
   if (nc < 2L) stop("only one column in the argument to 'pairs'")
   if(!all(horInd >= 1L & horInd <= nc))
@@ -248,10 +249,10 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
               mar = rep.int(gap/2, 4), oma = oma)
   on.exit(par(opar))
   dev.hold(); on.exit(dev.flush(), add = TRUE)
-  
+
   if (iso) axis.width <- max(apply(x, 2, function (y) diff(range(y)))) # maximal width of range on an axis
   if (!is.null(lim) && (nrow(lim) != nc || ncol(lim) != 2)) stop("lim= must be a n_dim x 2 matrix")
-  
+
   xl <- yl <- logical(nc)
   if (is.numeric(log)) xl[log] <- yl[log] <- TRUE
   else {xl[] <- grepl("x", log); yl[] <- grepl("y", log)}
@@ -269,7 +270,7 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
         }
         localPlot(x[, j], x[, i], xlab = "", ylab = "", axes = FALSE, type = "n", xlim=iso.xlim, ylim=iso.ylim, ..., log = l)
       } else {
-        ## plot with automatic axis limits if neither iso=TRUE nor lim= have been specified 
+        ## plot with automatic axis limits if neither iso=TRUE nor lim= have been specified
         localPlot(x[, j], x[, i], xlab = "", ylab = "", axes = FALSE, type = "n", ..., log = l)
       }
       if(i == j || (i < j && has.lower) || (i > j && has.upper) ) {
@@ -303,7 +304,7 @@ gma.pairs <- function (M, dims=NULL, Meta=NULL, select=NULL, alpha.select=0, pch
         if (any(par("mfg") != mfg))
           stop("the 'panel' function made a new plot")
       } else par(new = FALSE)
-      
+
     }
   if (!is.null(main)) {
     font.main <- if("font.main" %in% nmdots) dots$font.main else par("font.main")

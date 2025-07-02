@@ -68,6 +68,8 @@ That is, ranges have the same width on each axis, but are shifted to center the 
 
 \item{lim}{use \code{lim=c(min, max)} to specify a fixed range for all coordinate axes,
 or choose individual ranges as an \eqn{n_{\text{dim}} \times 2}{n_dim x 2} matrix (overrides \code{iso=TRUE})}
+
+\item{...}{further graphics parameters are passed through to the underlying plot functions}
 }
 \description{
 \strong{TODO:}
